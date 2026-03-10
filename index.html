@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GeoGuard AI | Mining Impact</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --glass: rgba(15, 20, 30, 0.7);
+            --blur: blur(20px);
+            --accent: #00f2ff;
+            --danger: #ff4d4d;
+        }
+        body, html { margin: 0; padding: 0; background: #020205; color: white; font-family: 'Inter', sans-serif; overflow: hidden; height: 100%; }
+        #canvas-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+
+        /* Responsive Dashboard Layout */
+        .ui-overlay {
+            position: relative; z-index: 10;
+            display: flex; flex-direction: column;
+            height: 100vh; padding: 20px; box-sizing: border-box;
+            pointer-events: none;
+        }
+
+        .panel {
+            background: var(--glass);
+            backdrop-filter: var(--blur);
+            -webkit-backdrop-filter: var(--blur);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px; padding: 30px;
+            pointer-events: auto;
+            max-width: 400px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
+        }
+
+        h1 { font-family: 'Orbitron', sans-serif; font-size: 22px; margin: 0 0 10px 0; letter-spacing: 2px; }
+        .tagline { font-size: 12px; color: #888; margin-bottom: 25px; line-height: 1.4; }
+
+        .stat-main { margin-bottom: 20px; }
+        .label { font-size: 10px; text-transform: uppercase; color: var(--accent); letter-spacing: 1px; font-weight: 700; }
+        .value-large { font-size: 56px; font-weight: 800; font-family: 'Orbitron'; margin-top: 5px; }
+
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
+        .grid-item { background: rgba(255,255,255,0.03); padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); }
+        .grid-item h4 { margin: 0; font-size: 10px; color: #666; }
+        .grid-item p { margin: 5px 0 0; font-size: 16px; font-weight: 600; }
+
+        .status-box { padding: 15px; border-radius: 12px; background: rgba(0,0,0,0.4); margin-bottom: 20px; border-left: 4px solid var(--accent); }
+        .risk-high { border-left-color: var(--danger) !important; color: var(--danger); }
+
+        button {
+            width: 100%; padding: 16px; border-radius: 12px; border: none;
+            background: var(--accent); color: #000; font-weight: 800;
+            font-family: 'Orbitron'; cursor: pointer; transition: 0.3s;
+        }
+        button:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0, 242, 255, 0.4); }
+
+        @media (max-width: 600px) {
+            .panel { max-width: 100%; padding: 20px; }
+            .value-large { font-size: 40px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="canvas-container"></div>
+
+    <div class="ui-overlay">
+        <aside class="panel">
+            <h1>GEOGUARD <span style="color:var(--accent)">PRO</span></h1>
+            <p class="tagline">AI-Driven Environmental Forensics & Structural Integrity Monitoring</p>
+            
+            <div class="stat-main">
+                <span class="label">Eco-Damage Index</span>
+                <div id="damage-score" class="value-large">24.5</div>
+            </div>
+
+            <div class="grid">
+                <div class="grid-item"><h4>Forest Loss</h4><p id="forest-val">2.1%</p></div>
+                <div class="grid-item"><h4>Air (PM2.5)</h4><p id="air-val">42 µg</p></div>
+                <div class="grid-item"><h4>Water Tox.</h4><p id="water-val">0.01</p></div>
+                <div class="grid-item"><h4>Soil Deg.</h4><p id="soil-val">5.4%</p></div>
+            </div>
+
+            <div id="status-container" class="status-box">
+                <span class="label">AI Risk Assessment</span>
+                <p id="risk-status" style="margin: 8px 0 0; font-size: 14px;">Nominal Operations</p>
+            </div>
+
+            <button onclick="runAIScan()">INITIATE DEEP SCAN</button>
+        </aside>
+    </div>
+
+    <script>
+        // --- THREE.JS SCENE ---
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+        // Terrain
+        const geometry = new THREE.PlaneGeometry(30, 30, 60, 60);
+        const material = new THREE.MeshPhongMaterial({ 
+            color: 0x00f2ff, wireframe: true, transparent: true, opacity: 0.15 
+        });
+        const terrain = new THREE.Mesh(geometry, material);
+        terrain.rotation.x = -Math.PI / 2.5;
+        scene.add(terrain);
+
+        // Scanner Ring
+        const ringGeo = new THREE.TorusGeometry(8, 0.05, 16, 100);
+        const ringMat = new THREE.MeshBasicMaterial({ color: 0x00f2ff });
+        const ring = new THREE.Mesh(ringGeo, ringMat);
+        ring.rotation.x = Math.PI / 2;
+        scene.add(ring);
+
+        const light = new THREE.DirectionalLight(0xffffff, 1);
+        light.position.set(0, 10, 10);
+        scene.add(light);
+        camera.position.set(0, 5, 12);
+
+        function animate() {
+            requestAnimationFrame(animate);
+            terrain.rotation.z += 0.001;
+            ring.position.y = Math.sin(Date.now() * 0.002) * 2; // Floating effect
+            
+            const positions = terrain.geometry.attributes.position.array;
+            for(let i = 0; i < positions.length; i += 3) {
+                positions[i+2] = Math.sin(positions[i] * 0.3 + Date.now() * 0.001) * 0.5;
+            }
+            terrain.geometry.attributes.position.needsUpdate = true;
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // --- AI LOGIC & DAMAGE SCORING ---
+        // Formula: Score = (ForestLoss * 2) + (Air/10) + (Water * 50) + (IllegalMiningFactor * 20)
+        function calculateImpact(f, a, w, s, illegal) {
+            let score = (f * 2) + (a / 10) + (w * 50) + (s * 1.5);
+            if(illegal) score += 25; // Massive penalty for illegal signatures
+            return score.toFixed(1);
+        }
+
+        function runAIScan() {
+            // UI Feedback
+            gsap.to(ring.scale, { x: 1.5, y: 1.5, duration: 0.5, yoyo: true, repeat: 1 });
+            
+            const f = (Math.random() * 40).toFixed(1);
+            const a = Math.floor(Math.random() * 200);
+            const w = (Math.random() * 0.8).toFixed(2);
+            const s = (Math.random() * 25).toFixed(1);
+            const isIllegal = Math.random() > 0.7; // 30% chance to detect illegal mining
+
+            const finalScore = calculateImpact(f, a, w, s, isIllegal);
+            
+            // UI Updates
+            document.getElementById('forest-val').innerText = f + "%";
+            document.getElementById('air-val').innerText = a + " µg";
+            document.getElementById('water-val').innerText = w;
+            document.getElementById('soil-val').innerText = s + "%";
+            document.getElementById('damage-score').innerText = finalScore;
+
+            const statusBox = document.getElementById('status-container');
+            const riskText = document.getElementById('risk-status');
+
+            if (finalScore > 75 || isIllegal) {
+                statusBox.classList.add('risk-high');
+                riskText.innerText = isIllegal ? "CRITICAL: Illegal Mining Pattern Detected" : "WARNING: High Landslide Susceptibility";
+                terrain.material.color.setHex(0xff4d4d);
+                ringMat.color.setHex(0xff4d4d);
+            } else {
+                statusBox.classList.remove('risk-high');
+                riskText.innerText = "Nominal Operations";
+                terrain.material.color.setHex(0x00f2ff);
+                ringMat.color.setHex(0x00f2ff);
+            }
+        }
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
