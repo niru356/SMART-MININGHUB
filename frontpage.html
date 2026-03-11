@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Salford AI | Mining Intelligence Portfolio</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://unpkg.com/three-globe"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tsparticles@2/tsparticles.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;700;800&family=JetBrains+Mono&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --neon-cyan: #00f2ff;
+            --deep-space: #020617;
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--deep-space);
+            color: white;
+            scroll-behavior: smooth;
+        }
+
+        /* UI Overlays & Effects */
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 1.5rem;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .glass-panel:hover {
+            border-color: rgba(0, 242, 255, 0.3);
+            box-shadow: 0 10px 40px -10px rgba(0, 242, 255, 0.15);
+            transform: translateY(-4px);
+        }
+
+        .glow-text {
+            background: linear-gradient(to bottom, #fff, var(--neon-cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 15px rgba(0, 242, 255, 0.4));
+        }
+
+        #particles-js { position: fixed; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
+
+        /* Custom Terminal Styling */
+        .terminal-container {
+            font-family: 'JetBrains Mono', monospace;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Grid Overlay for Visual Depth */
+        .grid-bg {
+            background-image: linear-gradient(rgba(0, 242, 255, 0.03) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(0, 242, 255, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+        
+        /* Smooth Scrollbar for Terminal */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(0, 242, 255, 0.2); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(0, 242, 255, 0.5); }
+
+        .pulse-red {
+            animation: pulse-red 2s infinite;
+        }
+        @keyframes pulse-red {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 62, 62, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(255, 62, 62, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 62, 62, 0); }
+        }
+    </style>
+</head>
+<body class="grid-bg">
+
+<div id="particles-js"></div>
+
+<nav class="fixed top-0 w-full z-50 px-8 py-6 flex justify-between items-center bg-slate-950/60 backdrop-blur-xl border-b border-white/5 transition-all duration-300">
+    <div class="text-2xl font-black tracking-tighter">SALFORD<span class="text-cyan-400">.AI</span></div>
+    <div class="hidden md:flex gap-8 text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 items-center">
+        <a href="#stats" class="hover:text-cyan-400 transition-colors">Metrics</a>
+        <a href="#visualizer" class="hover:text-cyan-400 transition-colors">Live Data</a>
+        <a href="#globe" class="hover:text-cyan-400 transition-colors">Global Scan</a>
+        <button class="px-5 py-2 border border-cyan-400/30 text-cyan-400 rounded-full hover:bg-cyan-400 hover:text-black transition-all shadow-[0_0_15px_rgba(0,242,255,0.1)] hover:shadow-[0_0_20px_rgba(0,242,255,0.4)]">SYSTEM LOGIN</button>
+    </div>
+</nav>
+
+<section class="min-h-screen flex flex-col justify-center items-center relative text-center px-4 pt-20">
+    <div class="z-10">
+        <span class="text-cyan-400 text-xs font-bold tracking-[0.6em] uppercase mb-4 block opacity-80 animate-pulse">Neural-Telemetry v4.0</span>
+        <h1 class="glow-text text-6xl md:text-8xl lg:text-9xl font-black leading-none mb-6">THE MINING<br>INDUSTRY</h1>
+        <p class="max-w-xl mx-auto text-gray-400 text-lg font-light mb-10 leading-relaxed">
+            Autonomous satellite surveillance monitoring environmental impact and resource extraction in real-time.
+        </p>
+        <div class="flex gap-4 justify-center flex-wrap">
+            <a href="#visualizer" class="bg-cyan-500 hover:bg-cyan-400 text-black px-8 py-4 rounded-full font-bold transition shadow-[0_0_20px_rgba(0,242,255,0.3)] hover:shadow-[0_0_30px_rgba(0,242,255,0.5)]">View Live Feed</a>
+            <a href="#terminal" class="glass-panel px-8 py-4 rounded-full font-bold hover:border-cyan-400 transition">Open Terminal</a>
+        </div>
+    </div>
+    <div class="absolute bottom-0 w-full h-[40vh] bg-gradient-to-t from-slate-950 to-transparent pointer-events-none"></div>
+</section>
+
+<section id="stats" class="py-20 px-8 max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 relative z-10">
+    <div class="glass-panel p-8 text-center group">
+        <div class="text-4xl md:text-5xl font-bold text-cyan-400 mb-2 drop-shadow-[0_0_8px_rgba(0,242,255,0.5)]">99.2%</div>
+        <div class="text-gray-500 text-xs font-bold tracking-widest uppercase group-hover:text-gray-300 transition-colors">System Uptime</div>
+    </div>
+    <div class="glass-panel p-8 text-center group">
+        <div class="text-4xl md:text-5xl font-bold text-cyan-400 mb-2 drop-shadow-[0_0_8px_rgba(0,242,255,0.5)]">420<span class="text-lg md:text-2xl">TB</span></div>
+        <div class="text-gray-500 text-xs font-bold tracking-widest uppercase group-hover:text-gray-300 transition-colors">Daily Telemetry</div>
+    </div>
+    <div class="glass-panel p-8 text-center group">
+        <div class="text-4xl md:text-5xl font-bold text-red-500 mb-2 drop-shadow-[0_0_8px_rgba(239,68,68,0.5)]">1,208</div>
+        <div class="text-gray-500 text-xs font-bold tracking-widest uppercase group-hover:text-gray-300 transition-colors">Anomalies Detected</div>
+    </div>
+    <div class="glass-panel p-8 text-center group flex flex-col justify-center items-center">
+        <div class="flex items-center gap-3 mb-2">
+            <div class="w-4 h-4 rounded-full bg-green-400 pulse-red mx-auto" style="animation: pulse-red 2s infinite; box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.7);"></div>
+            <div class="text-4xl md:text-5xl font-bold text-green-400 drop-shadow-[0_0_8px_rgba(74,222,128,0.5)]">Active</div>
+        </div>
+        <div class="text-gray-500 text-xs font-bold tracking-widest uppercase group-hover:text-gray-300 transition-colors">Sensor Network</div>
+    </div>
+</section>
+
+<section id="visualizer" class="py-20 px-4 md:px-8 max-w-7xl mx-auto">
+    <div class="glass-panel overflow-hidden">
+        <div class="p-6 md:p-8 border-b border-white/5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div>
+                <h2 class="text-2xl font-bold mb-1">Extraction Intensity Feed</h2>
+                <p class="text-xs text-cyan-500/80 font-mono tracking-wider">NODE: ODISHA_CLUSTER_04 <span class="text-gray-500 ml-2">| SEC: ALPHA</span></p>
+            </div>
+            <div class="flex items-center gap-4 bg-slate-900/50 px-4 py-2 rounded-lg border border-white/5">
+                <div class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
+                <span class="text-red-500 font-mono text-2xl font-bold" id="live-val">0.00%</span>
+            </div>
+        </div>
+        <div class="p-4 md:p-8 h-[300px] md:h-[450px] w-full">
+            <canvas id="liveChart"></canvas>
+        </div>
+    </div>
+</section>
+
+<section id="globe" class="py-24 relative overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-b from-transparent via-cyan-900/5 to-transparent pointer-events-none"></div>
+    <div class="text-center z-10 relative mb-8">
+        <h2 class="text-3xl md:text-5xl font-black mb-4">Neural Resource Map</h2>
+        <p class="text-cyan-400/70 font-mono text-xs md:text-sm tracking-widest max-w-2xl mx-auto">INTERACTIVE 3D MAPPING OF GLOBAL MINERAL DEPOSITS <br/> <span class="text-gray-500 text-[10px]">(DRAG TO ROTATE)</span></p>
+    </div>
+    <div id="globeViz" class="h-[500px] md:h-[700px] cursor-grab active:cursor-grabbing w-full max-w-7xl mx-auto relative z-20"></div>
+</section>
+
+<section id="terminal" class="py-20 px-4 md:px-8 max-w-4xl mx-auto">
+    <div class="terminal-container glass-panel overflow-hidden border-white/10 hover:border-cyan-500/30 transition-colors duration-500">
+        <div class="bg-slate-900/80 p-4 flex items-center justify-between border-b border-white/5 backdrop-blur-md">
+            <div class="flex gap-2">
+                <div class="w-3 h-3 rounded-full bg-red-500/80 hover:bg-red-500 cursor-pointer transition"></div>
+                <div class="w-3 h-3 rounded-full bg-yellow-500/80 hover:bg-yellow-500 cursor-pointer transition"></div>
+                <div class="w-3 h-3 rounded-full bg-green-500/80 hover:bg-green-500 cursor-pointer transition"></div>
+            </div>
+            <span class="text-[10px] text-cyan-400/50 font-mono uppercase tracking-widest flex items-center gap-2">
+                <div class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></div>
+                Salford-OS v4.0.1
+            </span>
+        </div>
+        <div id="chatbox" class="h-[350px] p-6 overflow-y-auto space-y-3 text-sm text-cyan-400 font-mono scroll-smooth bg-slate-950/40">
+            <div class="opacity-70">[INIT] Establishing encrypted link to orbital sensors...</div>
+            <div class="opacity-70">[SUCCESS] Link Active. Handshake verified.</div>
+            <div class="text-white pt-2">Welcome, Administrator. Global scanning array is listening.</div>
+            <div class="text-gray-500 text-xs mt-2 border-b border-white/5 pb-4 mb-4">Try commands: <span class="text-cyan-600">status</span>, <span class="text-cyan-600">scan</span>, <span class="text-cyan-600">risk</span>, <span class="text-cyan-600">clear</span></div>
+        </div>
+        <div class="p-6 bg-slate-900/90 border-t border-white/5 relative group">
+            <div class="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent opacity-0 group-hover:opacity-100 transition duration-500"></div>
+            <div class="flex items-center">
+                <span class="text-cyan-600 mr-3 font-mono font-bold">root@salford_ai:~#</span>
+                <input id="chatInput" type="text" class="bg-transparent border-none outline-none text-cyan-100 w-full font-mono placeholder-cyan-800/50" placeholder="Enter command sequence..." autocomplete="off" spellcheck="false">
+            </div>
+        </div>
+    </div>
+</section>
+
+<footer class="py-12 text-center opacity-60 border-t border-white/5 mt-10">
+    <p class="text-[10px] font-bold tracking-[0.5em] uppercase text-gray-400 hover:text-cyan-400 transition-colors cursor-default">Built for Niru Intelligence Systems | 2026</p>
+</footer>
+
+<script>
+    // 1. Particle Atmosphere
+    tsParticles.load("particles-js", {
+        particles: {
+            number: { value: 60, density: { enable: true, value_area: 800 } },
+            color: { value: "#00f2ff" },
+            opacity: { value: 0.15, random: true },
+            size: { value: 2, random: true },
+            links: { enable: true, distance: 150, color: "#00f2ff", opacity: 0.1, width: 1 },
+            move: { enable: true, speed: 0.6, direction: "none", random: true, straight: false, outModes: "out" }
+        },
+        interactivity: {
+            events: { onHover: { enable: true, mode: "grab" } },
+            modes: { grab: { distance: 140, links: { opacity: 0.5 } } }
+        }
+    });
+
+    // 2. 3D Globe with Data Points
+    const globeContainer = document.getElementById("globeViz");
+    const globe = new ThreeGlobe()
+        .globeImageUrl('//unpkg.com/three-globe/example/img/earth-dark.jpg')
+        .bumpImageUrl('//unpkg.com/three-globe/example/img/earth-topology.png')
+        .pointsData([
+            {lat: 22.5, lng: 85.0, size: 1.2, color: "#00f2ff", label: "Odisha Cluster"},
+            {lat: -25.2, lng: 130.0, size: 0.8, color: "#ff3e3e", label: "Aus Site Alpha"},
+            {lat: 56.1, lng: 106.0, size: 0.7, color: "#00ffaa", label: "Siberian Node"},
+            {lat: -14.2, lng: -51.9, size: 0.9, color: "#00f2ff", label: "Bravo Amazon"},
+            {lat: 48.8, lng: 2.3, size: 0.5, color: "#f59e0b", label: "EU Server Hub"}
+        ])
+        .pointAltitude("size")
+        .pointColor("color")
+        .pointResolution(32);
+
+    const scene = new THREE.Scene();
+    scene.add(globe);
+    
+    // Add lighting to make the globe look 3D and premium
+    const ambientLight = new THREE.AmbientLight(0xbbbbbb, 0.8);
+    scene.add(ambientLight);
+    
+    const dLight = new THREE.DirectionalLight(0xffffff, 1.5);
+    dLight.position.set(-800, 2000, 400);
+    scene.add(dLight);
+    
+    const dLight2 = new THREE.DirectionalLight(0x00f2ff, 0.5);
+    dLight2.position.set(200, 500, -200);
+    scene.add(dLight2);
+
+    const camera = new THREE.PerspectiveCamera(60, globeContainer.clientWidth / globeContainer.clientHeight, 0.1, 1000);
+    camera.position.z = 280;
+    
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setSize(globeContainer.clientWidth, globeContainer.clientHeight);
+    globeContainer.appendChild(renderer.domElement);
+
+    // CRUCIAL: Added OrbitControls for interactive interaction
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+    controls.enablePan = false;
+    controls.minDistance = 150;
+    controls.maxDistance = 600;
+    controls.autoRotate = true;
+    controls.autoRotateSpeed = 0.6;
+
+    // Handle Resize
+    window.addEventListener('resize', () => {
+        if(globeContainer) {
+            camera.aspect = globeContainer.clientWidth / globeContainer.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(globeContainer.clientWidth, globeContainer.clientHeight);
+        }
+    });
+
+    function animGlobe() {
+        requestAnimationFrame(animGlobe);
+        controls.update(); // Update controls for damping and auto-rotate
+        renderer.render(scene, camera);
+    }
+    animGlobe();
+
+    // 3. Live Updating Chart
+    const ctx = document.getElementById('liveChart').getContext('2d');
+    
+    // Create a smooth gradient for the chart area
+    let gradient = ctx.createLinearGradient(0, 0, 0, 400);
+    gradient.addColorStop(0, 'rgba(0, 242, 255, 0.6)');
+    gradient.addColorStop(1, 'rgba(0, 242, 255, 0.0)');
+
+    let chartData = Array.from({length: 12}, () => Math.floor(Math.random() * 40 + 30));
+    let chartLabels = Array.from({length: 12}, (_, i) => {
+        let d = new Date();
+        d.setMinutes(d.getMinutes() - (11 - i) * 5);
+        return d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+    });
+
+    const chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: chartLabels,
+            datasets: [{
+                data: chartData,
+                borderColor: '#00f2ff',
+                backgroundColor: gradient,
+                fill: true,
+                tension: 0.4,
+                borderWidth: 3,
+                pointRadius: 3,
+                pointBackgroundColor: '#020617',
+                pointBorderColor: '#00f2ff',
+                pointHoverRadius: 6,
+                pointHoverBackgroundColor: '#00f2ff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { 
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                    titleColor: '#00f2ff',
+                    bodyColor: '#fff',
+                    borderColor: 'rgba(0, 242, 255, 0.2)',
+                    borderWidth: 1,
+                    padding: 10,
+                    displayColors: false
+                }
+            },
+            scales: {
+                y: { 
+                    grid: { color: 'rgba(255,255,255,0.05)', drawBorder: false }, 
+                    ticks: { color: '#64748b', font: {family: 'JetBrains Mono', size: 10} },
+                    suggestedMin: 0,
+                    suggestedMax: 100
+                },
+                x: { 
+                    grid: { display: false, drawBorder: false }, 
+                    ticks: { color: '#64748b', font: {family: 'JetBrains Mono', size: 10}, maxRotation: 0 } 
+                }
+            },
+            interaction: {
+                mode: 'nearest',
+                axis: 'x',
+                intersect: false
+            }
+        }
+    });
+
+    setInterval(() => {
+        let last = chartData[chartData.length-1];
+        let next = Math.max(10, Math.min(95, last + (Math.random()*30-15)));
+        chartData.push(next);
+        
+        // Add new time cleanly
+        let d = new Date();
+        chartLabels.push(d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'}));
+        
+        if(chartData.length > 15) { chartData.shift(); chartLabels.shift(); }
+        
+        // Dynamic color for value based on threshold
+        const valElem = document.getElementById('live-val');
+        valElem.innerText = next.toFixed(2) + "%";
+        if(next > 80) valElem.className = 'text-red-500 font-mono text-xl md:text-2xl font-bold animate-pulse';
+        else if(next > 50) valElem.className = 'text-yellow-400 font-mono text-xl md:text-2xl font-bold';
+        else valElem.className = 'text-cyan-400 font-mono text-xl md:text-2xl font-bold';
+        
+        chart.update('none'); // Update without full animation for smoother live feel
+    }, 2800);
+
+    // 4. AI Terminal Interaction
+    const input = document.getElementById('chatInput');
+    const box = document.getElementById('chatbox');
+
+    function appendMessage(content, type = 'system') {
+        const div = document.createElement('div');
+        if(type === 'user') div.className = 'text-white mt-4 border-l-2 border-cyan-500 pl-3 py-1 bg-cyan-900/10';
+        else if(type === 'ai') div.className = 'text-cyan-300 mt-2 pl-3 relative before:absolute before:content-[""] before:left-0 before:top-2 before:w-1 before:h-1 before:bg-cyan-500 before:rounded-full';
+        else if(type === 'error') div.className = 'text-red-400 mt-2 pl-3';
+        
+        div.innerHTML = content;
+        box.appendChild(div);
+        box.scrollTop = box.scrollHeight;
+    }
+
+    input.addEventListener('keypress', (e) => {
+        if(e.key === 'Enter' && input.value.trim() !== '') {
+            const cmd = input.value.trim();
+            appendMessage(`> ${cmd}`, 'user');
+            
+            // clear command
+            if(cmd.toLowerCase() === 'clear') {
+                setTimeout(() => {
+                    box.innerHTML = '';
+                    appendMessage('Console cleared.', 'system');
+                }, 100);
+                input.value = '';
+                return;
+            }
+
+            // Simulate parsing delay
+            setTimeout(() => {
+                let reply = "[WARN] Invalid command sequence. Syntax error near column 1.";
+                let msgType = 'error';
+                
+                const lowerCmd = cmd.toLowerCase();
+                if(lowerCmd.includes('status')) {
+                    reply = "[OK] All 42 orbital nodes operational. Thermal anomaly scan functioning at 99.8% precision.";
+                    msgType = 'ai';
+                }
+                else if(lowerCmd.includes('scan')) {
+                    reply = "[PROCESS] High mineral concentration detected in Zone-7 (Odisha).<br/>[NOTE] High turbidity in local water sources concurrently detected. Suggesting environmental review.";
+                    msgType = 'ai';
+                }
+                else if(lowerCmd.includes('risk') || lowerCmd.includes('danger')) {
+                    reply = "[ALERT] Landslide probability in Eastern Belt raised to: 64%.<br/>[ACTION] Re-routing terrestrial sensors for deep-scan.";
+                    msgType = 'error';
+                }
+                else if(lowerCmd.includes('help')) {
+                    reply = "Available commands: status, scan, risk, clear, help";
+                    msgType = 'ai';
+                }
+                
+                appendMessage(`AI: ${reply}`, msgType);
+            }, 500 + Math.random() * 500); // Random delay between 0.5s - 1s
+            
+            input.value = '';
+        }
+    });
+</script>
+</body>
+</html>
