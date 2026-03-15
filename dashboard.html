@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sustainability Intelligence Platform | Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap');
+
+        :root {
+            --primary-blue: #1e3a8a;
+            --accent-green: #10b981;
+            --warli-terracotta: #c2410c;
+            --bg-gradient: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--bg-gradient);
+            color: #1e293b;
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* Glassmorphism Sidebar */
+        aside {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border-right: 1px solid rgba(255, 255, 255, 0.3);
+            width: 300px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 0.875rem 1.25rem;
+            margin: 0.25rem 1rem;
+            border-radius: 12px;
+            color: #64748b;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .nav-item:hover {
+            background: rgba(30, 58, 138, 0.05);
+            color: var(--primary-blue);
+            transform: translateX(5px);
+        }
+
+        .nav-active {
+            background: var(--primary-blue) !important;
+            color: white !important;
+            box-shadow: 0 10px 15px -3px rgba(30, 58, 138, 0.3);
+        }
+
+        /* Content Cards */
+        .module-card {
+            display: none;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .module-card.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 3D Warli Animation Canvas */
+        .warli-container {
+            background: #1a202c;
+            border-radius: 20px;
+            height: 280px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 0 40px rgba(0,0,0,0.6);
+            border: 4px solid #2d3748;
+        }
+
+        .warli-figure {
+            position: absolute;
+            width: 40px;
+            height: 60px;
+            background: transparent;
+            border: 2px solid #ed8936;
+            clip-path: polygon(50% 0%, 0% 40%, 100% 40%, 50% 70%, 0% 100%, 100% 100%);
+            animation: walk 15s linear infinite;
+            filter: drop-shadow(0 0 8px rgba(237, 137, 54, 0.6));
+        }
+
+        @keyframes walk {
+            0% { left: -10%; transform: rotate(-5deg); }
+            50% { transform: rotate(5deg); }
+            100% { left: 110%; transform: rotate(-5deg); }
+        }
+
+        /* Tech Badges */
+        .tech-badge {
+            background: rgba(255, 255, 255, 0.5);
+            border: 1px solid rgba(0,0,0,0.05);
+            padding: 4px 12px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #475569;
+        }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    </style>
+</head>
+<body>
+
+    <aside class="flex flex-col h-full py-6">
+        <div class="px-8 mb-8">
+            <h1 class="text-2xl font-bold text-blue-900 tracking-tight">SustainIntel</h1>
+            <div class="h-1 w-12 bg-green-500 rounded-full mt-1"></div>
+        </div>
+
+        <nav class="flex-1 space-y-1 overflow-y-auto">
+            <div onclick="showModule('overview', this)" class="nav-item nav-active">
+                <i class="fas fa-chart-line w-6"></i> <span>Executive Overview</span>
+            </div>
+            <div onclick="showModule('mining', this)" class="nav-item">
+                <i class="fas fa-hammer w-6"></i> <span>Mining Impact</span>
+            </div>
+            <div onclick="showModule('energy', this)" class="nav-item">
+                <i class="fas fa-bolt w-6"></i> <span>Renewable Energy</span>
+            </div>
+            <div onclick="showModule('pollution', this)" class="nav-item">
+                <i class="fas fa-smog w-6"></i> <span>Pollution Monitor</span>
+            </div>
+            <div onclick="showModule('resources', this)" class="nav-item">
+                <i class="fas fa-seedling w-6"></i> <span>Natural Resources</span>
+            </div>
+            <div onclick="showModule('carbon', this)" class="nav-item">
+                <i class="fas fa-cloud w-6"></i> <span>Carbon Dashboard</span>
+            </div>
+            <div onclick="showModule('alerts', this)" class="nav-item">
+                <i class="fas fa-bell w-6"></i> <span>Smart Alerts</span>
+            </div>
+        </nav>
+
+        <div class="px-8 mt-auto pt-6 border-t border-gray-200">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">NR</div>
+                <div>
+                    <p class="text-sm font-bold text-slate-800">Nirakar Rath</p>
+                    <p class="text-xs text-slate-500">Government Admin</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <main class="flex-1 overflow-y-auto p-10">
+        <header class="flex justify-between items-start mb-10">
+            <div>
+                <h2 id="title-text" class="text-3xl font-extrabold text-slate-800 tracking-tight">Executive Overview</h2>
+                <p id="subtitle-text" class="text-slate-500 mt-1">State-Wide Sustainability Intelligence Platform [cite: 1]</p>
+            </div>
+            <div class="flex gap-3">
+                <div class="bg-white px-5 py-3 rounded-2xl shadow-sm border border-slate-200 text-center">
+                    <p class="text-xs font-bold text-slate-400 uppercase">District Score</p>
+                    <p class="text-xl font-black text-blue-600">82/100</p>
+                </div>
+            </div>
+        </header>
+
+        <div id="overview" class="module-card active space-y-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+                    <p class="text-slate-500 text-sm font-semibold mb-1">Energy Production</p>
+                    <h4 class="text-3xl font-bold">1,420 MW</h4>
+                    <span class="text-xs text-green-500 font-bold">↑ 8.4% Efficiency</span>
+                </div>
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+                    <p class="text-slate-500 text-sm font-semibold mb-1">Forest Coverage</p>
+                    <h4 class="text-3xl font-bold">62.1%</h4>
+                    <span class="text-xs text-slate-400 font-bold">Satellite Verified </span>
+                </div>
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+                    <p class="text-slate-500 text-sm font-semibold mb-1">Active IoT Sensors</p>
+                    <h4 class="text-3xl font-bold">4,829</h4>
+                    <span class="text-xs text-blue-500 font-bold">Online </span>
+                </div>
+            </div>
+
+            <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+                <div class="flex justify-between items-center mb-6">
+                    <h4 class="text-xl font-bold text-slate-800">Cultural Resource Flow (Warli Art Concept) [cite: 15, 16]</h4>
+                    <span class="text-xs font-bold text-orange-600 bg-orange-50 px-3 py-1 rounded-full">AI Generative Art [cite: 17]</span>
+                </div>
+                <div class="warli-container">
+                    <div class="warli-figure" style="top: 20%; animation-delay: 0s;"></div>
+                    <div class="warli-figure" style="top: 45%; animation-delay: 3s; border-color: #48bb78;"></div>
+                    <div class="warli-figure" style="top: 70%; animation-delay: 7s; border-color: #63b3ed;"></div>
+                    <div class="absolute inset-0 flex items-center justify-center opacity-20">
+                        <p class="text-white text-4xl font-black uppercase tracking-widest">Sustainability Flow</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="mining" class="module-card space-y-6">
+            <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+                <div class="flex gap-4 mb-6">
+                    <span class="tech-badge">Python</span> <span class="tech-badge">YOLO</span> <span class="tech-badge">OpenCV</span> 
+                </div>
+                <h3 class="text-2xl font-bold mb-4">Mining Impact Intelligence </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="p-5 bg-red-50 rounded-2xl border border-red-100">
+                        <p class="font-bold text-red-700 underline mb-2">Illegal Mining Detection </p>
+                        <p class="text-sm text-red-600">AI scanning satellite imagery for unauthorized land degradation. </p>
+                    </div>
+                    <div class="p-5 bg-orange-50 rounded-2xl border border-orange-100">
+                        <p class="font-bold text-orange-700 mb-2">Landslide Risk Prediction </p>
+                        <p class="text-sm text-orange-600">Predictive analytics assessing mine collapse probability. [cite: 6, 8]</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="energy" class="module-card space-y-6">
+            <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+                <div class="flex gap-4 mb-6">
+                    <span class="tech-badge">TensorFlow</span> <span class="tech-badge">Weather APIs</span> 
+                </div>
+                <h3 class="text-2xl font-bold mb-4">Renewable Energy Intelligence </h3>
+                <p class="text-slate-600 mb-6">AI monitors solar and wind energy generation while predicting future output and optimizing storage. </p>
+                <div class="p-6 border-2 border-dashed border-slate-200 rounded-3xl text-center">
+                    <i class="fas fa-map-marked-alt text-4xl text-slate-300 mb-4"></i>
+                    <p class="font-bold text-slate-500">Recommended Solar Farm Locations: Loading... </p>
+                </div>
+            </div>
+        </div>
+
+        <div id="placeholder" class="module-card text-center py-20">
+            <i class="fas fa-microchip text-6xl text-slate-200 mb-6"></i>
+            <h3 class="text-2xl font-bold text-slate-400">Syncing Intelligence Data...</h3>
+            <p class="text-slate-400">Connecting to Cloud (AWS/Firebase) Infrastructure. </p>
+        </div>
+
+    </main>
+
+    <script>
+        function showModule(moduleId, element) {
+            // Update Navigation UI
+            document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('nav-active'));
+            element.classList.add('nav-active');
+
+            // Update Module Visibility
+            document.querySelectorAll('.module-card').forEach(card => card.classList.remove('active'));
+            const target = document.getElementById(moduleId);
+            if (target) {
+                target.classList.add('active');
+            } else {
+                document.getElementById('placeholder').classList.add('active');
+            }
+
+            // Update Header Text
+            const titles = {
+                'overview': 'Executive Overview',
+                'mining': 'Mining Impact Intelligence',
+                'energy': 'Renewable Energy Intelligence',
+                'pollution': 'Pollution Monitoring System',
+                'resources': 'Natural Resource Monitoring',
+                'carbon': 'Carbon Emission Dashboard',
+                'alerts': 'Smart Alert System'
+            };
+            document.getElementById('title-text').innerText = titles[moduleId];
+            document.getElementById('subtitle-text').innerText = `Real-time monitoring for ${titles[moduleId]} module.`;
+        }
+    </script>
+</body>
+</html>
