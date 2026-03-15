@@ -3,17 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Mining Hub | Enterprise Resource Intelligence</title>
+    <title>Garbha | Subsurface Intelligence</title>
     
-    <!-- Alpine.js for lightweight interactions -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Google Fonts: Inter for UI, Playfair Display for elegant headings -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
 
     <script>
         tailwind.config = {
@@ -26,27 +23,16 @@
                     colors: {
                         mining: {
                             50: '#fbf8f3',
-                            100: '#f5efe4',
-                            200: '#ead9c1',
-                            300: '#dfbc94',
                             400: '#d39962',
                             500: '#cb7e3b',
                             600: '#bd6630',
                             700: '#9d4f29',
-                            800: '#7f4225',
-                            900: '#663621',
                         },
                         corporate: {
                             900: '#111827',
                             800: '#1f2937',
-                            700: '#374151',
                             100: '#f3f4f6',
-                            50: '#f9fafb'
                         }
-                    },
-                    boxShadow: {
-                        'corporate': '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)',
-                        'corporate-hover': '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
                     }
                 }
             }
@@ -54,345 +40,150 @@
     </script>
 
     <style>
-        body {
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-            background-color: #fbf8f3;
-            color: #111827;
+        /* Custom Utilities for Responsiveness */
+        body { background-color: #fbf8f3; color: #111827; overflow-x: hidden; }
+        
+        .hero-overlay { 
+            background: linear-gradient(to bottom, rgba(17, 24, 39, 0.9) 0%, rgba(17, 24, 39, 0.6) 100%); 
         }
 
-        /* Subtle hero background gradient overlay */
-        .hero-overlay {
-            background: linear-gradient(to right, rgba(17, 24, 39, 0.9) 0%, rgba(17, 24, 39, 0.4) 100%);
-        }
-
-        /* Refined Card Hover Animation */
-        .card-zoom-image {
-            transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-        }
-        .corporate-card:hover .card-zoom-image {
-            transform: scale(1.05);
-        }
-
-        /* Clean data grid styling */
+        /* Subtle data-grid that scales */
         .data-grid {
-            background-image: linear-gradient(rgba(0,0,0,0.03) 1px, transparent 1px),
+            background-image: linear-gradient(rgba(0,0,0,0.03) 1px, transparent 1px), 
                               linear-gradient(90deg, rgba(0,0,0,0.03) 1px, transparent 1px);
             background-size: 20px 20px;
         }
+        @media (min-width: 768px) {
+            .data-grid { background-size: 40px 40px; }
+        }
 
-        /* Animation Keyframes */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fade-in {
-            animation: fadeIn 0.8s ease-out forwards;
-        }
-        .delay-100 { animation-delay: 100ms; }
-        .delay-200 { animation-delay: 200ms; }
+        /* Smooth Mobile Menu Animation */
+        [x-cloak] { display: none !important; }
+
+        /* Custom scrollbar for a premium feel */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #bd6630; border-radius: 10px; }
     </style>
 </head>
-<body class="selection:bg-mining-500 selection:text-white" x-data="{ isLoginModalOpen: false }">
+<body class="selection:bg-mining-500 selection:text-white" x-data="{ mobileMenu: false }">
 
-    <!-- Login Modal -->
-    <div x-show="isLoginModalOpen" 
-         class="fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto overflow-x-hidden pt-4 px-4 pb-20 text-center sm:block sm:p-0"
-         style="display: none;">
-        
-        <!-- Background backdrop -->
-        <div x-show="isLoginModalOpen" 
-             x-transition:enter="ease-out duration-300"
-             x-transition:enter-start="opacity-0"
-             x-transition:enter-end="opacity-100"
-             x-transition:leave="ease-in duration-200"
-             x-transition:leave-start="opacity-100"
-             x-transition:leave-end="opacity-0"
-             class="fixed inset-0 bg-corporate-900 bg-opacity-75 backdrop-blur-sm transition-opacity" 
-             @click="isLoginModalOpen = false"
-             aria-hidden="true"></div>
-
-        <!-- This element is to trick the browser into centering the modal contents. -->
-        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-
-        <!-- Modal panel -->
-        <div x-show="isLoginModalOpen" 
-             x-transition:enter="ease-out duration-300"
-             x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-             x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
-             x-transition:leave="ease-in duration-200"
-             x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
-             x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-             class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md w-full border border-corporate-200"
-             role="dialog" aria-modal="true" aria-labelledby="modal-headline">
-            
-            <div class="bg-corporate-900 px-6 py-8 relative">
-                <button @click="isLoginModalOpen = false" class="absolute top-4 right-4 text-white hover:text-mining-400 transition-colors">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
-                
-                <div class="flex items-center justify-center gap-2 mb-4">
-                    <div class="w-10 h-10 bg-mining-600 rounded flex items-center justify-center">
-                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
-                    </div>
-                </div>
-                <!-- Title -->
-                <h3 class="text-2xl leading-6 font-serif text-white text-center" id="modal-headline">
-                    Access Portal
-                </h3>
-                <p class="mt-2 text-sm text-center text-corporate-400">Secure enterprise telemetry gateway</p>
-            </div>
-            
-            <div class="bg-white px-6 py-8">
-                <form class="space-y-6">
-                    <div>
-                        <label for="email" class="block text-sm font-medium text-corporate-700">Enterprise Email</label>
-                        <div class="mt-1">
-                            <input id="email" name="email" type="email" autocomplete="email" required class="appearance-none block w-full px-3 py-2 border border-corporate-200 rounded-md shadow-sm placeholder-corporate-400 focus:outline-none focus:ring-mining-500 focus:border-mining-500 sm:text-sm">
-                        </div>
-                    </div>
-
-                    <div>
-                        <label for="password" class="block text-sm font-medium text-corporate-700">Decryption Key</label>
-                        <div class="mt-1">
-                            <input id="password" name="password" type="password" autocomplete="current-password" required class="appearance-none block w-full px-3 py-2 border border-corporate-200 rounded-md shadow-sm placeholder-corporate-400 focus:outline-none focus:ring-mining-500 focus:border-mining-500 sm:text-sm">
-                        </div>
-                    </div>
-
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center">
-                            <input id="remember-me" name="remember-me" type="checkbox" class="h-4 w-4 text-mining-600 focus:ring-mining-500 border-corporate-300 rounded">
-                            <label for="remember-me" class="ml-2 block text-sm text-corporate-900">
-                                Remember terminal
-                            </label>
-                        </div>
-
-                        <div class="text-sm">
-                            <a href="#" class="font-medium text-mining-600 hover:text-mining-500">
-                                Forgot credentials?
-                            </a>
-                        </div>
-                    </div>
-
-                    <div>
-                        <button type="submit" class="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-mining-600 hover:bg-mining-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-mining-500 transition-colors">
-                            Authenticate
-                        </button>
-                    </div>
-                </form>
-            </div>
-            
-            <div class="bg-corporate-50 px-6 py-4 border-t border-corporate-100 flex justify-center">
-                <p class="text-xs text-corporate-500 flex items-center gap-1">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
-                    256-bit encrypted connection to central server
-                </p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Navbar -->
     <nav x-data="{ scrolled: false }" 
          @scroll.window="scrolled = (window.pageYOffset > 20)"
-         :class="{ 'bg-white/95 backdrop-blur-md shadow-sm py-4': scrolled, 'bg-transparent py-6': !scrolled }"
+         :class="{ 'bg-white/95 backdrop-blur-md shadow-md py-3': scrolled, 'bg-transparent py-6': !scrolled }"
          class="fixed w-full z-50 transition-all duration-300">
-        <div class="max-w-7xl mx-auto px-6 md:px-12 flex justify-between items-center">
-            <div class="flex items-center gap-2">
-                <div class="w-8 h-8 bg-mining-600 rounded flex items-center justify-center">
-                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+        <div class="max-w-7xl mx-auto px-4 sm:px-8 lg:px-12 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-mining-700 rounded-sm flex items-center justify-center rotate-45 shadow-lg">
+                    <div class="w-4 h-4 border-2 border-white -rotate-45"></div>
                 </div>
-                <span :class="{ 'text-corporate-900': scrolled, 'text-white': !scrolled }" class="text-xl font-bold tracking-tight transition-colors">SMART<span class="text-mining-500">MINING</span></span>
+                <span :class="{ 'text-corporate-900': scrolled, 'text-white': !scrolled }" class="text-xl sm:text-2xl font-serif font-bold tracking-tighter transition-colors">GARBHA</span>
             </div>
             
             <div class="hidden md:flex items-center gap-8">
                 <a href="#operations" :class="{ 'text-corporate-700 hover:text-mining-600': scrolled, 'text-white/80 hover:text-white': !scrolled }" class="text-sm font-medium transition-colors">Operations</a>
-                <button @click="isLoginModalOpen = true" :class="{ 'text-corporate-700 hover:text-mining-600': scrolled, 'text-white/80 hover:text-white': !scrolled }" class="text-sm font-medium transition-colors">Sign In</button>
-                <button @click="isLoginModalOpen = true" class="bg-mining-600 hover:bg-mining-700 text-white px-5 py-2.5 rounded-md text-sm font-medium transition-colors shadow-sm cursor-pointer">
-                    Client Portal
+                <a href="#" :class="{ 'text-corporate-700 hover:text-mining-600': scrolled, 'text-white/80 hover:text-white': !scrolled }" class="text-sm font-medium transition-colors">Insights</a>
+                <button class="bg-mining-600 hover:bg-mining-700 text-white px-6 py-2 rounded-md text-sm font-semibold transition-all shadow-lg active:scale-95">
+                    Access Portal
                 </button>
             </div>
+
+            <button @click="mobileMenu = !mobileMenu" class="md:hidden p-2 transition-colors" :class="scrolled ? 'text-corporate-900' : 'text-white'">
+                <svg x-show="!mobileMenu" class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+                <svg x-show="mobileMenu" x-cloak class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+
+        <div x-show="mobileMenu" 
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0 -translate-y-4"
+             x-transition:enter-end="opacity-100 translate-y-0"
+             x-cloak 
+             class="absolute top-full left-0 w-full bg-white border-b border-gray-200 p-6 space-y-4 shadow-2xl md:hidden">
+            <a href="#operations" @click="mobileMenu = false" class="block text-lg font-medium text-corporate-800 border-b pb-2">Operations</a>
+            <a href="#" @click="mobileMenu = false" class="block text-lg font-medium text-corporate-800 border-b pb-2">Insights</a>
+            <button class="w-full bg-mining-600 text-white py-4 rounded-xl font-bold shadow-lg">Client Login</button>
         </div>
     </nav>
 
-    <!-- Hero Section -->
-    <section class="relative h-screen min-h-[600px] flex items-center justify-start overflow-hidden">
-        <!-- Background Image -->
+    <section class="relative min-h-[90vh] md:min-h-screen flex items-center justify-center px-4 sm:px-6">
         <div class="absolute inset-0 z-0">
-            <img src="hero_bg.png" alt="Odisha Mining Operations" class="w-full h-full object-cover">
+            <div class="w-full h-full bg-slate-900 bg-[url('https://images.unsplash.com/photo-1578319439584-104c94d37305?auto=format&fit=crop&q=80')] bg-cover bg-center"></div>
             <div class="absolute inset-0 hero-overlay"></div>
         </div>
 
-        <div class="relative z-10 max-w-7xl mx-auto px-6 md:px-12 w-full pt-20">
-            <div class="max-w-3xl text-white">
-                <span class="inline-block py-1 px-3 border border-mining-400/30 text-mining-300 text-xs font-semibold tracking-widest uppercase rounded-full mb-6 animate-fade-in opacity-0">Autonomous Intelligence</span>
-                <h1 class="text-5xl md:text-7xl font-serif leading-tight mb-6 animate-fade-in delay-100 opacity-0">
-                    Smarter <br/>
-                    <span class="text-mining-400">Extraction in Odisha</span>
+        <div class="relative z-10 max-w-7xl mx-auto w-full pt-20">
+            <div class="max-w-4xl text-center md:text-left">
+                <p class="text-mining-400 text-xs sm:text-sm font-bold tracking-[0.3em] uppercase mb-4 animate-pulse">Discovery Engine v2.0</p>
+                <h1 class="text-4xl sm:text-6xl lg:text-8xl font-serif text-white leading-tight mb-8">
+                    Unlock the <span class="italic text-mining-400 underline decoration-mining-500/30">Secret</span> <br class="hidden sm:block"> Beneath the Surface
                 </h1>
-                <p class="text-lg md:text-xl text-white/80 font-light leading-relaxed mb-10 animate-fade-in delay-200 opacity-0 max-w-xl">
-                    Smart Mining Hub offers industry-leading oversight and telemetry for active mining sectors. Uncompromising precision and autonomous analytics for the modern enterprise.
+                <p class="text-base md:text-xl text-white/70 font-light max-w-2xl mb-10 mx-auto md:mx-0">
+                    Garbha delivers high-resolution subsurface telemetry and autonomous extraction intelligence, revealing the untapped potential of Odisha's mineral landscapes.
                 </p>
-                <div class="flex flex-col sm:flex-row gap-4 animate-fade-in delay-200 opacity-0">
-                    <a href="#operations" class="bg-mining-600 hover:bg-mining-700 text-white px-8 py-3.5 rounded-md font-medium text-center transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2">
-                        Explore Now
-                        <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                <div class="flex flex-col sm:flex-row justify-center md:justify-start gap-4">
+                    <a href="#operations" class="bg-mining-600 hover:bg-white hover:text-mining-700 text-white px-10 py-4 rounded-full font-bold transition-all text-center shadow-xl">
+                        Explore Sectors
                     </a>
-                    <button @click="isLoginModalOpen = true" class="bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 text-white px-8 py-3.5 rounded-md font-medium text-center transition-all flex items-center justify-center gap-2 cursor-pointer">
-                        Access Portal
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>
+                    <button class="border border-white/30 backdrop-blur-md text-white px-10 py-4 rounded-full font-bold hover:bg-white/10 transition-all">
+                        Telemetry Data
                     </button>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Key Metrics Ribbon -->
-    <section class="bg-corporate-900 border-b border-corporate-800 relative z-20 shadow-xl">
-        <div class="max-w-7xl mx-auto px-6 md:px-12 py-10">
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-8 divide-x divide-corporate-800">
-                <div class="text-center px-4">
-                    <p class="text-4xl font-light text-white mb-1">112</p>
-                    <p class="text-corporate-400 text-xs font-semibold uppercase tracking-wider">Active Sectors</p>
+    <section id="operations" class="py-16 md:py-24 px-4 sm:px-8 data-grid">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex flex-col md:flex-row md:items-end justify-between mb-12 md:mb-16 gap-6">
+                <div class="max-w-2xl">
+                    <h2 class="text-3xl md:text-5xl font-serif text-corporate-900 mb-4">Precision Extraction</h2>
+                    <p class="text-corporate-700 text-sm md:text-lg">Mapping and monitoring the core resource arteries of the subcontinent.</p>
                 </div>
-                <div class="text-center px-4">
-                    <p class="text-4xl font-light text-white mb-1">3.2<span class="text-mining-500 font-bold text-xl">M</span></p>
-                    <p class="text-corporate-400 text-xs font-semibold uppercase tracking-wider">Tons Monitored Daily</p>
-                </div>
-                <div class="text-center px-4">
-                    <p class="text-4xl font-light text-white mb-1">99.9<span class="text-mining-500 font-bold text-xl">%</span></p>
-                    <p class="text-corporate-400 text-xs font-semibold uppercase tracking-wider">System Uptime</p>
-                </div>
-                <div class="text-center px-4">
-                    <p class="text-4xl font-light text-white mb-1">ISO</p>
-                    <p class="text-corporate-400 text-xs font-semibold uppercase tracking-wider">Compliant Framework</p>
+                <div class="flex items-baseline gap-4 md:block text-right">
+                    <span class="text-4xl md:text-6xl font-serif text-mining-500">112+</span>
+                    <p class="text-[10px] md:text-xs uppercase tracking-widest text-corporate-400 mt-2">Active Telemetry Sites</p>
                 </div>
             </div>
-        </div>
-    </section>
 
-    <!-- Detailed Operations Showcase (No Chart) -->
-    <section id="operations" class="py-24 bg-corporate-50 data-grid">
-        <div class="max-w-7xl mx-auto px-6 md:px-12">
-            <div class="max-w-3xl mb-16">
-                <h2 class="text-Corporate-900 text-4xl font-serif mb-4">Strategic Assets in Odisha</h2>
-                <div class="w-20 h-1 bg-mining-600 mb-6"></div>
-                <p class="text-corporate-700 text-lg leading-relaxed">
-                    Our platform integrates directly with the largest reserves in India, providing unparalleled transparency and logistical control for high-yield operations across diverse resource sectors.
-                </p>
-            </div>
-
-            <!-- Grid expanded to show more mines -->
-            <div class="grid md:grid-cols-2 gap-10">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
                 
-                <!-- Iron Ore -->
-                <div class="corporate-card bg-white rounded-xl overflow-hidden shadow-corporate hover:shadow-corporate-hover transition-all duration-300 border border-corporate-100 group">
-                    <div class="h-72 overflow-hidden relative">
-                        <img src="hero_bg.png" alt="Iron Ore Sector" class="w-full h-full object-cover card-zoom-image">
-                        <div class="absolute top-4 left-4 bg-mining-600 text-white text-xs font-bold px-3 py-1 rounded">IRON ORE</div>
-                        
-                        <div class="absolute bottom-0 left-0 w-full bg-gradient-to-t from-black/80 to-transparent p-6 pb-4">
-                            <h3 class="text-2xl font-serif text-white mb-1">Keonjhar District</h3>
-                            <p class="text-mining-300 text-sm font-medium">Joda & Barbil Sector</p>
+                <div class="group bg-white border border-gray-100 rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-500 flex flex-col">
+                    <div class="h-56 sm:h-72 lg:h-80 overflow-hidden relative">
+                        <div class="w-full h-full bg-gray-300 bg-[url('https://images.unsplash.com/photo-1516937941344-00b4e0337589?auto=format&fit=crop&q=80')] bg-cover"></div>
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+                        <div class="absolute bottom-6 left-6">
+                            <span class="bg-mining-600 text-[10px] text-white font-bold px-3 py-1 rounded-full uppercase mb-2 inline-block">Iron Ore</span>
+                            <h3 class="text-2xl font-serif text-white">Keonjhar Belt</h3>
                         </div>
                     </div>
-                    <div class="p-8">
-                        <p class="text-corporate-700 mb-6 text-sm leading-relaxed">
-                            Continuous monitoring of fleet movements and extraction rates across the Keonjhar belt. Holding over a third of India's reserves, our logistics AI ensures a 15% reduction in idle times while managing the scale of open-pit operations over the red-dust landscapes.
-                        </p>
-                        <div class="flex items-center gap-4 border-t border-corporate-100 pt-4">
-                           <div class="text-xs">
-                               <span class="text-corporate-400 uppercase tracking-wide block mb-1">Status</span>
-                               <span class="font-semibold text-green-600 flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-green-500"></span> Online</span>
-                           </div>
-                           <div class="text-xs border-l border-corporate-100 pl-4">
-                               <span class="text-corporate-400 uppercase tracking-wide block mb-1">Output</span>
-                               <span class="font-semibold text-corporate-900">4,200 t/hr</span>
-                           </div>
+                    <div class="p-6 md:p-8 flex-grow">
+                        <p class="text-gray-600 text-sm leading-relaxed mb-6">Autonomous fleet orchestration across India's largest red-dust reserves.</p>
+                        <div class="flex justify-between items-center border-t border-gray-50 pt-6 mt-auto">
+                            <span class="text-[10px] font-bold text-green-600 uppercase flex items-center gap-1">
+                                <span class="w-2 h-2 bg-green-500 rounded-full animate-ping"></span> Active Stream
+                            </span>
+                            <span class="text-sm font-semibold text-corporate-900">4.2k t/hr</span>
                         </div>
                     </div>
                 </div>
 
-                <!-- Bauxite -->
-                <div class="corporate-card bg-white rounded-xl overflow-hidden shadow-corporate hover:shadow-corporate-hover transition-all duration-300 border border-corporate-100 group">
-                    <div class="h-72 overflow-hidden relative">
-                        <img src="bauxite_bg.png" alt="Bauxite Sector" class="w-full h-full object-cover card-zoom-image">
-                        <div class="absolute top-4 left-4 bg-corporate-800 text-white text-xs font-bold px-3 py-1 rounded">BAUXITE</div>
-                        
-                        <div class="absolute bottom-0 left-0 w-full bg-gradient-to-t from-black/80 to-transparent p-6 pb-4">
-                            <h3 class="text-2xl font-serif text-white mb-1">Koraput Range</h3>
-                            <p class="text-corporate-300 text-sm font-medium">Panchpatmali Depots</p>
+                <div class="group bg-white border border-gray-100 rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-500 flex flex-col">
+                    <div class="h-56 sm:h-72 lg:h-80 overflow-hidden relative">
+                        <div class="w-full h-full bg-gray-300 bg-[url('https://images.unsplash.com/photo-1574684591905-6d54d4b26756?auto=format&fit=crop&q=80')] bg-cover"></div>
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+                        <div class="absolute bottom-6 left-6">
+                            <span class="bg-corporate-800 text-[10px] text-white font-bold px-3 py-1 rounded-full uppercase mb-2 inline-block">Bauxite</span>
+                            <h3 class="text-2xl font-serif text-white">Koraput Range</h3>
                         </div>
                     </div>
-                    <div class="p-8">
-                        <p class="text-corporate-700 mb-6 text-sm leading-relaxed">
-                            Deploying advanced LiDAR drone sweeps to track volumetric changes in tiered bauxite excavations. Set against the dramatic eastern ghats, this operation requires delicate precision. Real-time data syncs with corporate ERP systems for seamless supply chain management.
-                        </p>
-                        <div class="flex items-center gap-4 border-t border-corporate-100 pt-4">
-                           <div class="text-xs">
-                               <span class="text-corporate-400 uppercase tracking-wide block mb-1">Status</span>
-                               <span class="font-semibold text-green-600 flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-green-500"></span> Online</span>
-                           </div>
-                           <div class="text-xs border-l border-corporate-100 pl-4">
-                               <span class="text-corporate-400 uppercase tracking-wide block mb-1">Output</span>
-                               <span class="font-semibold text-corporate-900">1,850 t/hr</span>
-                           </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Coal -->
-                <div class="corporate-card bg-white rounded-xl overflow-hidden shadow-corporate hover:shadow-corporate-hover transition-all duration-300 border border-corporate-100 group">
-                    <div class="h-72 overflow-hidden relative">
-                        <!-- We will use a placeholder or image here depending on what we downloaded -->
-                        <img src="coal_bg.png" alt="Coal Sector" class="w-full h-full object-cover card-zoom-image" onerror="this.src='https://images.unsplash.com/photo-1587802488880-9289dd474fdd?auto=format&fit=crop&q=80&w=800'">
-                        <div class="absolute top-4 left-4 bg-gray-900 text-white text-xs font-bold px-3 py-1 rounded border border-gray-700">THERMAL COAL</div>
-                        
-                        <div class="absolute bottom-0 left-0 w-full bg-gradient-to-t from-black/80 to-transparent p-6 pb-4">
-                            <h3 class="text-2xl font-serif text-white mb-1">Talcher Coalfields</h3>
-                            <p class="text-gray-300 text-sm font-medium">Mahanadi Basin</p>
-                        </div>
-                    </div>
-                    <div class="p-8">
-                        <p class="text-corporate-700 mb-6 text-sm leading-relaxed">
-                            One of the largest repositories of power grade coal in India. The Smart Mining Hub provides continuous thermal signature scanning to prevent automated combustion, whilst orchestrating complex rail-loadout logistics powering the state's thermal energy grids.
-                        </p>
-                        <div class="flex items-center gap-4 border-t border-corporate-100 pt-4">
-                           <div class="text-xs">
-                               <span class="text-corporate-400 uppercase tracking-wide block mb-1">Status</span>
-                               <span class="font-semibold text-green-600 flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-green-500"></span> Online</span>
-                           </div>
-                           <div class="text-xs border-l border-corporate-100 pl-4">
-                               <span class="text-corporate-400 uppercase tracking-wide block mb-1">Output</span>
-                               <span class="font-semibold text-corporate-900">12,000 t/hr</span>
-                           </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Chromite -->
-                <div class="corporate-card bg-white rounded-xl overflow-hidden shadow-corporate hover:shadow-corporate-hover transition-all duration-300 border border-corporate-100 group">
-                    <div class="h-72 overflow-hidden relative">
-                        <img src="chromite_bg.png" alt="Chromite Sector" class="w-full h-full object-cover card-zoom-image" onerror="this.src='https://images.unsplash.com/photo-1504917595217-d4dc336ae943?auto=format&fit=crop&q=80&w=800'">
-                        <div class="absolute top-4 left-4 bg-slate-700 text-white text-xs font-bold px-3 py-1 rounded">CHROMITE</div>
-                        
-                        <div class="absolute bottom-0 left-0 w-full bg-gradient-to-t from-black/80 to-transparent p-6 pb-4">
-                            <h3 class="text-2xl font-serif text-white mb-1">Sukinda Valley</h3>
-                            <p class="text-slate-300 text-sm font-medium">Jajpur Sector</p>
-                        </div>
-                    </div>
-                    <div class="p-8">
-                        <p class="text-corporate-700 mb-6 text-sm leading-relaxed">
-                            Hosting 97% of India's chromite reserves. Our telemetry network focuses heavily on water turbidity metrics and environmental compliance tracking due to the delicate balance necessary in the chrome processing facilities located within the valley.
-                        </p>
-                        <div class="flex items-center gap-4 border-t border-corporate-100 pt-4">
-                           <div class="text-xs">
-                               <span class="text-corporate-400 uppercase tracking-wide block mb-1">Status</span>
-                               <span class="font-semibold text-amber-500 flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span> Servicing</span>
-                           </div>
-                           <div class="text-xs border-l border-corporate-100 pl-4">
-                               <span class="text-corporate-400 uppercase tracking-wide block mb-1">Output</span>
-                               <span class="font-semibold text-corporate-900">450 t/hr</span>
-                           </div>
+                    <div class="p-6 md:p-8 flex-grow">
+                        <p class="text-gray-600 text-sm leading-relaxed mb-6">Volumetric LiDAR mapping for multi-tier aluminum ore extraction.</p>
+                        <div class="flex justify-between items-center border-t border-gray-50 pt-6 mt-auto">
+                            <span class="text-[10px] font-bold text-green-600 uppercase flex items-center gap-1">
+                                <span class="w-2 h-2 bg-green-500 rounded-full animate-ping"></span> Active Stream
+                            </span>
+                            <span class="text-sm font-semibold text-corporate-900">1.8k t/hr</span>
                         </div>
                     </div>
                 </div>
@@ -401,58 +192,36 @@
         </div>
     </section>
 
-    <!-- Professional Footer -->
-    <footer class="bg-corporate-900 text-corporate-400 pt-16 pb-8 border-t border-corporate-800">
-        <div class="max-w-7xl mx-auto px-6 md:px-12 grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
-            <div class="md:col-span-1">
-                <div class="flex items-center gap-2 mb-6">
-                    <div class="w-8 h-8 bg-mining-600 rounded flex items-center justify-center">
-                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
-                    </div>
-                    <span class="text-xl font-bold tracking-tight text-white">SMART<span class="text-mining-500">MINING</span></span>
+    <footer class="bg-corporate-900 text-white pt-16 pb-8 px-4 sm:px-8">
+        <div class="max-w-7xl mx-auto">
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-12 mb-16">
+                <div>
+                    <h3 class="text-2xl font-serif font-bold mb-6">GARBHA</h3>
+                    <p class="text-gray-400 text-sm leading-relaxed max-w-xs">Revealing the geological secrets of the earth through advanced telemetry and AI-driven insights.</p>
                 </div>
-                <p class="text-sm leading-relaxed mb-6">
-                    Empowering the resource extraction industry with military-grade intelligence and operational software solutions.
-                </p>
+                <div class="md:text-center">
+                    <h4 class="font-bold mb-6 text-mining-400">Field Offices</h4>
+                    <ul class="text-sm text-gray-400 space-y-3">
+                        <li class="hover:text-white transition-colors cursor-default">Bhubaneswar HQ</li>
+                        <li class="hover:text-white transition-colors cursor-default">Keonjhar Hub</li>
+                        <li class="hover:text-white transition-colors cursor-default">Koraput Lab</li>
+                    </ul>
+                </div>
+                <div class="md:text-right">
+                    <h4 class="font-bold mb-6 text-mining-400">Newsletter</h4>
+                    <div class="flex max-w-sm md:ml-auto">
+                        <input type="email" placeholder="Email" class="bg-white/5 border border-white/10 px-4 py-2 w-full text-sm focus:outline-none focus:border-mining-500">
+                        <button class="bg-mining-600 px-6 py-2 text-sm font-bold hover:bg-mining-700 transition-colors">Join</button>
+                    </div>
+                </div>
             </div>
-            
-            <div>
-                <h4 class="text-white font-semibold mb-6">Solutions</h4>
-                <ul class="space-y-4 text-sm">
-                    <li><a href="#" class="hover:text-mining-400 transition-colors">Telemetry Engine</a></li>
-                    <li><a href="#" class="hover:text-mining-400 transition-colors">Logistics AI</a></li>
-                    <li><a href="#" class="hover:text-mining-400 transition-colors">Environmental Compliance</a></li>
-                    <li><a href="#" class="hover:text-mining-400 transition-colors">Predictive Maintenance</a></li>
-                </ul>
-            </div>
-            
-            <div>
-                <h4 class="text-white font-semibold mb-6">Company</h4>
-                <ul class="space-y-4 text-sm">
-                    <li><a href="#" class="hover:text-mining-400 transition-colors">About Us</a></li>
-                    <li><a href="#" class="hover:text-mining-400 transition-colors">Executive Team</a></li>
-                    <li><a href="#" class="hover:text-mining-400 transition-colors">Careers</a></li>
-                    <li><a href="#" class="hover:text-mining-400 transition-colors">Contact</a></li>
-                </ul>
-            </div>
-
-            <div>
-                <h4 class="text-white font-semibold mb-6">Hubs</h4>
-                <ul class="space-y-4 text-sm">
-                    <li>Odisha HQ (Bhubaneswar)</li>
-                    <li>Keonjhar Field Office</li>
-                    <li>Koraput Control Center</li>
-                    <li>Talcher Logistics Facility</li>
-                </ul>
-            </div>
-        </div>
-        
-        <div class="max-w-7xl mx-auto px-6 md:px-12 flex flex-col md:flex-row justify-between items-center pt-8 border-t border-corporate-800 text-xs">
-            <p>&copy; 2026 Smart Mining Hub. All rights reserved.</p>
-            <div class="flex gap-6 mt-4 md:mt-0">
-                <a href="#" class="hover:text-white transition-colors">Privacy Policy</a>
-                <a href="#" class="hover:text-white transition-colors">Terms of Service</a>
-                <a href="#" class="hover:text-white transition-colors">Security Constraints</a>
+            <div class="border-t border-white/5 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-[10px] uppercase tracking-widest text-gray-500">
+                <p>&copy; 2026 Garbha Intelligence Group. All rights reserved.</p>
+                <div class="flex gap-6">
+                    <a href="#" class="hover:text-white transition-colors">Security</a>
+                    <a href="#" class="hover:text-white transition-colors">Privacy</a>
+                    <a href="#" class="hover:text-white transition-colors">Terms</a>
+                </div>
             </div>
         </div>
     </footer>
