@@ -1,282 +1,1255 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sustainability Intelligence Platform | Dashboard</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>Garbha | Enterprise Intelligence Dashboard</title>
     
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap');
-
-        :root {
-            --primary-blue: #1e3a8a;
-            --accent-green: #10b981;
-            --warli-terracotta: #c2410c;
-            --bg-gradient: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                    },
+                    colors: {
+                        mining: {
+                            400: '#d39962',
+                            500: '#cb7e3b',
+                            600: '#bd6630',
+                            700: '#9d4f29',
+                            900: '#663621',
+                        },
+                        corporate: {
+                            900: '#0a0d14',
+                            800: '#111827',
+                            700: '#1f2937',
+                            600: '#374151',
+                            400: '#9ca3af',
+                            100: '#f3f4f6',
+                        }
+                    }
+                }
+            }
         }
-
+    </script>
+    <style>
         body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background: var(--bg-gradient);
-            color: #1e293b;
-            height: 100vh;
-            display: flex;
+            background-color: #0a0d14;
+            color: #f3f4f6;
             overflow: hidden;
         }
 
-        /* Glassmorphism Sidebar */
-        aside {
-            background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(12px);
-            border-right: 1px solid rgba(255, 255, 255, 0.3);
-            width: 300px;
+        /* Glassmorphism utility */
+        .glass-panel {
+            background: rgba(17, 24, 39, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(156, 163, 175, 0.05);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.8);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(10, 13, 20, 0.5); }
+        ::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #374151; }
+        
+        /* Topographic pattern overlay */
+        .topo-bg {
+            background-image: url('data:image/svg+xml,%3Csvg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"%3E%3Cpath d="M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3z" fill="%23ffffff" fill-opacity="0.015" fill-rule="evenodd"/%3E%3C/svg%3E');
+        }
+
+        .data-grid-bg {
+            background-image: linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        /* Blinking dot */
+        .status-dot {
+            box-shadow: 0 0 8px 2px rgba(34, 197, 94, 0.4);
+        }
+
+        /* CSS Chart */
+        .bar-chart-container {
+            display: flex;
+            align-items: flex-end;
+            height: 200px;
+            gap: 12px;
+            padding-top: 20px;
+        }
+        .bar-col {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            position: relative;
+        }
+        .bar-fill {
+            width: 100%;
+            border-radius: 2px 2px 0 0;
             transition: all 0.3s ease;
         }
+        
+        /* Modifiers for different colored charts */
+        .chart-mining { background: rgba(189, 102, 48, 0.2); border-top: 2px solid #bd6630; }
+        .bar-col:hover .chart-mining { background: rgba(189, 102, 48, 0.4); box-shadow: 0 0 15px rgba(189, 102, 48, 0.2); }
+        
+        .chart-green { background: rgba(34, 197, 94, 0.2); border-top: 2px solid #22c55e; }
+        .bar-col:hover .chart-green { background: rgba(34, 197, 94, 0.4); box-shadow: 0 0 15px rgba(34, 197, 94, 0.2); }
+        
+        .chart-blue { background: rgba(59, 130, 246, 0.2); border-top: 2px solid #3b82f6; }
+        .bar-col:hover .chart-blue { background: rgba(59, 130, 246, 0.4); box-shadow: 0 0 15px rgba(59, 130, 246, 0.2); }
 
-        .nav-item {
-            display: flex;
-            align-items: center;
-            padding: 0.875rem 1.25rem;
-            margin: 0.25rem 1rem;
-            border-radius: 12px;
-            color: #64748b;
-            transition: all 0.2s ease;
-            cursor: pointer;
-        }
+        .chart-gray { background: rgba(156, 163, 175, 0.2); border-top: 2px solid #9ca3af; }
+        .bar-col:hover .chart-gray { background: rgba(156, 163, 175, 0.4); box-shadow: 0 0 15px rgba(156, 163, 175, 0.2); }
 
-        .nav-item:hover {
-            background: rgba(30, 58, 138, 0.05);
-            color: var(--primary-blue);
-            transform: translateX(5px);
-        }
-
-        .nav-active {
-            background: var(--primary-blue) !important;
-            color: white !important;
-            box-shadow: 0 10px 15px -3px rgba(30, 58, 138, 0.3);
-        }
-
-        /* Content Cards */
-        .module-card {
-            display: none;
-            animation: fadeIn 0.4s ease-out;
-        }
-
-        .module-card.active {
-            display: block;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* 3D Warli Animation Canvas */
-        .warli-container {
-            background: #1a202c;
-            border-radius: 20px;
-            height: 280px;
-            position: relative;
-            overflow: hidden;
-            box-shadow: inset 0 0 40px rgba(0,0,0,0.6);
-            border: 4px solid #2d3748;
-        }
-
-        .warli-figure {
+        .bar-tooltip {
             position: absolute;
-            width: 40px;
-            height: 60px;
-            background: transparent;
-            border: 2px solid #ed8936;
-            clip-path: polygon(50% 0%, 0% 40%, 100% 40%, 50% 70%, 0% 100%, 100% 100%);
-            animation: walk 15s linear infinite;
-            filter: drop-shadow(0 0 8px rgba(237, 137, 54, 0.6));
-        }
-
-        @keyframes walk {
-            0% { left: -10%; transform: rotate(-5deg); }
-            50% { transform: rotate(5deg); }
-            100% { left: 110%; transform: rotate(-5deg); }
-        }
-
-        /* Tech Badges */
-        .tech-badge {
-            background: rgba(255, 255, 255, 0.5);
-            border: 1px solid rgba(0,0,0,0.05);
-            padding: 4px 12px;
-            border-radius: 8px;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1f2937;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
             font-size: 0.75rem;
-            font-weight: 600;
-            color: #475569;
+            opacity: 0;
+            transition: opacity 0.2s;
+            pointer-events: none;
+            white-space: nowrap;
+            z-index: 10;
+        }
+        .bar-col:hover .bar-tooltip {
+            opacity: 1;
         }
 
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .gauge-circle {
+            transition: stroke-dashoffset 1s ease-out;
+        }
+
+        /* Enhanced Glassmorphism Glow */
+        .glass-glow {
+            position: relative;
+        }
+        .glass-glow::before {
+            content: '';
+            position: absolute;
+            inset: -1px;
+            background: linear-gradient(45deg, rgba(255,255,255,0.1), transparent 40%, transparent 60%, rgba(189,102,48,0.2));
+            z-index: -1;
+            border-radius: inherit;
+            pointer-events: none;
+        }
+
+        @keyframes radar-spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .radar-scanner {
+            background: conic-gradient(from 0deg, transparent 70%, rgba(189, 102, 48, 0.4) 100%);
+            border-radius: 50%;
+            animation: radar-spin 3s linear infinite;
+        }
+
+        /* SVG Line Animation */
+        .chart-line {
+            transition: d 1s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Liquid Wave Animation */
+        @keyframes wave {
+            0% { transform: translateX(0) translateZ(0) scaleY(1); }
+            50% { transform: translateX(-25%) translateZ(0) scaleY(0.85); }
+            100% { transform: translateX(-50%) translateZ(0) scaleY(1); }
+        }
+        .water-wave {
+            animation: wave 4s cubic-bezier(0.36, 0.45, 0.63, 0.53) infinite;
+            background: linear-gradient(180deg, rgba(34,197,94,0.4) 0%, rgba(34,197,94,0.8) 100%);
+        }
+        
+        /* EQ Animation */
+        @keyframes eq-bar {
+            0% { height: 10%; }
+            50% { height: 100%; }
+            100% { height: 10%; }
+        }
+        
+        /* Grid Graph styling */
+        .grid-chart-item {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 10px currentColor;
+        }
+        .grid-chart-item::after {
+            content: '';
+            position: absolute;
+            inset: -4px;
+            border-radius: 50%;
+            background: currentColor;
+            opacity: 0.3;
+            animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+        }
+
+        /* Carbon Emission Particles */
+        @keyframes float-up {
+            0% { transform: translateY(100px) scale(0.5); opacity: 0; }
+            50% { opacity: 0.5; }
+            100% { transform: translateY(-100px) scale(1.5); opacity: 0; }
+        }
+        .carbon-particle {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: rgba(34, 197, 94, 0.4);
+            border-radius: 50%;
+            pointer-events: none;
+            filter: blur(2px);
+            animation: float-up 4s linear infinite;
+        }
     </style>
 </head>
-<body>
+<body x-data="dashboard()" class="flex h-screen topo-bg relative text-sm font-sans">
+    
+    <!-- Sidebar -->
+    <aside class="w-72 flex flex-col glass-panel border-r border-corporate-800 z-30 relative shrink-0">
+        <div class="p-6">
+            <div class="flex items-center gap-3 mb-10 cursor-pointer" onclick="window.location.href='frontpage.html'">
+                <div class="w-9 h-9 bg-mining-600 rounded flex items-center justify-center shadow-[0_0_15px_rgba(189,102,48,0.3)]">
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                </div>
+                <span class="text-2xl font-bold tracking-tight text-white font-serif">GARBHA</span>
+            </div>
 
-    <aside class="flex flex-col h-full py-6">
-        <div class="px-8 mb-8">
-            <h1 class="text-2xl font-bold text-blue-900 tracking-tight">SustainIntel</h1>
-            <div class="h-1 w-12 bg-green-500 rounded-full mt-1"></div>
+            <p class="text-xs font-semibold text-corporate-400 uppercase tracking-wider mb-4 px-2">Intelligence Modules</p>
+            <nav class="space-y-1">
+                <template x-for="tab in tabs" :key="tab.id">
+                    <button @click="activeTab = tab.id; updateHeader(tab)" 
+                            :class="activeTab === tab.id ? 'bg-mining-600/10 text-mining-400 border-r-4 border-mining-500' : 'text-corporate-400 hover:bg-corporate-800/50 hover:text-white border-r-4 border-transparent'"
+                            class="w-full flex items-center gap-4 px-4 py-3 rounded-l-lg transition-all text-sm font-medium text-left">
+                        <i :class="tab.icon" class="w-5 text-center"></i>
+                        <span x-text="tab.name"></span>
+                        
+                        <!-- Notification Badge for Alerts -->
+                        <span x-show="tab.id === 'alerts'" class="ml-auto bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">3</span>
+                    </button>
+                </template>
+            </nav>
         </div>
 
-        <nav class="flex-1 space-y-1 overflow-y-auto">
-            <div onclick="showModule('overview', this)" class="nav-item nav-active">
-                <i class="fas fa-chart-line w-6"></i> <span>Executive Overview</span>
+        <div class="mt-auto p-6 border-t border-corporate-800">
+            <div class="flex items-center gap-3 bg-corporate-800/30 p-3 rounded-lg border border-corporate-700/50 hover:bg-corporate-800/50 transition-colors cursor-pointer">
+                <div class="w-10 h-10 rounded-full bg-mining-900 flex items-center justify-center text-mining-400 font-bold border border-mining-600/30">NR</div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-white truncate">Nirakar Rath</p>
+                    <p class="text-xs text-corporate-400 truncate">Chief Operations Officer</p>
+                </div>
+                <i class="fas fa-cog text-corporate-400 hover:text-white transition-colors"></i>
             </div>
-            <div onclick="showModule('mining', this)" class="nav-item">
-                <i class="fas fa-hammer w-6"></i> <span>Mining Impact</span>
-            </div>
-            <div onclick="showModule('energy', this)" class="nav-item">
-                <i class="fas fa-bolt w-6"></i> <span>Renewable Energy</span>
-            </div>
-            <div onclick="showModule('pollution', this)" class="nav-item">
-                <i class="fas fa-smog w-6"></i> <span>Pollution Monitor</span>
-            </div>
-            <div onclick="showModule('resources', this)" class="nav-item">
-                <i class="fas fa-seedling w-6"></i> <span>Natural Resources</span>
-            </div>
-            <div onclick="showModule('carbon', this)" class="nav-item">
-                <i class="fas fa-cloud w-6"></i> <span>Carbon Dashboard</span>
-            </div>
-            <div onclick="showModule('alerts', this)" class="nav-item">
-                <i class="fas fa-bell w-6"></i> <span>Smart Alerts</span>
-            </div>
-        </nav>
-
-        <div class="px-8 mt-auto pt-6 border-t border-gray-200">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">NR</div>
-                <div>
-                    <p class="text-sm font-bold text-slate-800">Nirakar Rath</p>
-                    <p class="text-xs text-slate-500">Government Admin</p>
+            <div class="mt-5 flex items-center justify-between text-xs font-medium">
+                <span class="text-corporate-400">Telemetry Link</span>
+                <div class="flex items-center gap-2">
+                    <span class="text-green-400">Encrypted</span>
+                    <span class="flex h-2 w-2 relative">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500 status-dot"></span>
+                    </span>
                 </div>
             </div>
         </div>
     </aside>
 
-    <main class="flex-1 overflow-y-auto p-10">
-        <header class="flex justify-between items-start mb-10">
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col relative z-20 h-screen overflow-hidden data-grid-bg">
+        
+        <!-- Header -->
+        <header class="glass-panel border-b border-corporate-800 px-8 py-6 sticky top-0 z-30 flex justify-between items-center bg-corporate-900/90 shrink-0">
             <div>
-                <h2 id="title-text" class="text-3xl font-extrabold text-slate-800 tracking-tight">Executive Overview</h2>
-                <p id="subtitle-text" class="text-slate-500 mt-1">State-Wide Sustainability Intelligence Platform [cite: 1]</p>
+                <h1 class="text-3xl font-serif text-white tracking-wide" x-text="headerTitle">Executive Overview</h1>
+                <p class="text-corporate-400 text-sm mt-1" x-text="headerSubtitle"></p>
             </div>
-            <div class="flex gap-3">
-                <div class="bg-white px-5 py-3 rounded-2xl shadow-sm border border-slate-200 text-center">
-                    <p class="text-xs font-bold text-slate-400 uppercase">District Score</p>
-                    <p class="text-xl font-black text-blue-600">82/100</p>
+            <div class="flex items-center gap-8">
+                <div class="text-right hidden md:block">
+                    <p class="text-xs text-corporate-400 uppercase tracking-wider font-semibold mb-1">District Score</p>
+                    <div class="flex items-end justify-end gap-2 text-mining-400">
+                        <span class="text-2xl font-bold leading-none" x-text="overviewMetrics.score + '/100'"></span>
+                    </div>
                 </div>
+                <div class="text-right hidden md:block">
+                    <p class="text-xs text-corporate-400 uppercase tracking-wider font-semibold mb-1">State Efficiency</p>
+                    <div class="flex items-end justify-end gap-2 text-green-400">
+                        <span class="text-2xl font-bold leading-none" x-text="overviewMetrics.efficiency + '%'"></span>
+                        <i class="fas fa-arrow-up text-sm mb-1"></i>
+                    </div>
+                </div>
+                <div class="h-10 w-px bg-corporate-800 hidden md:block"></div>
+                <button class="bg-mining-600 hover:bg-mining-500 text-white px-5 py-2.5 rounded text-sm font-semibold transition-all shadow-[0_4px_14px_0_rgba(189,102,48,0.39)] hover:shadow-[0_6px_20px_rgba(189,102,48,0.23)] flex items-center gap-2">
+                    <i class="fas fa-download"></i> Daily Report
+                </button>
             </div>
         </header>
 
-        <div id="overview" class="module-card active space-y-8">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
-                    <p class="text-slate-500 text-sm font-semibold mb-1">Energy Production</p>
-                    <h4 class="text-3xl font-bold">1,420 MW</h4>
-                    <span class="text-xs text-green-500 font-bold">↑ 8.4% Efficiency</span>
-                </div>
-                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
-                    <p class="text-slate-500 text-sm font-semibold mb-1">Forest Coverage</p>
-                    <h4 class="text-3xl font-bold">62.1%</h4>
-                    <span class="text-xs text-slate-400 font-bold">Satellite Verified </span>
-                </div>
-                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
-                    <p class="text-slate-500 text-sm font-semibold mb-1">Active IoT Sensors</p>
-                    <h4 class="text-3xl font-bold">4,829</h4>
-                    <span class="text-xs text-blue-500 font-bold">Online </span>
-                </div>
-            </div>
+        <!-- Scrollable Content Area -->
+        <div class="flex-1 overflow-y-auto p-8 relative">
+            
+            <!-- 1. Executive Overview -->
+            <div x-show="activeTab === 'overview'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0" class="space-y-6" style="display: none;">
+                
+                <!-- KPI Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="glass-panel rounded-xl p-6 border border-corporate-800 hover:border-mining-600/30 transition-colors">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="w-10 h-10 rounded-lg bg-corporate-800 flex items-center justify-center text-corporate-400">
+                                <i class="fas fa-weight-hanging text-lg"></i>
+                            </div>
+                            <span class="px-2 py-1 bg-green-500/10 text-green-400 text-xs font-semibold rounded">+2.4%</span>
+                        </div>
+                        <h3 class="text-corporate-400 text-sm font-medium mb-1">Total Extraction Output</h3>
+                        <p class="text-2xl font-bold text-white"><span x-text="overviewMetrics.extraction.toLocaleString()"></span> <span class="text-sm font-normal text-corporate-400">Tons</span></p>
+                    </div>
 
-            <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
-                <div class="flex justify-between items-center mb-6">
-                    <h4 class="text-xl font-bold text-slate-800">Cultural Resource Flow (Warli Art Concept) [cite: 15, 16]</h4>
-                    <span class="text-xs font-bold text-orange-600 bg-orange-50 px-3 py-1 rounded-full">AI Generative Art [cite: 17]</span>
+                    <div class="glass-panel rounded-xl p-6 border border-corporate-800 hover:border-mining-600/30 transition-colors">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="w-10 h-10 rounded-lg bg-corporate-800 flex items-center justify-center text-corporate-400">
+                                <i class="fas fa-bolt text-lg"></i>
+                            </div>
+                            <span class="px-2 py-1 bg-red-500/10 text-red-400 text-xs font-semibold rounded">+5.1%</span>
+                        </div>
+                        <h3 class="text-corporate-400 text-sm font-medium mb-1">Energy Production Target</h3>
+                        <p class="text-2xl font-bold text-white"><span x-text="overviewMetrics.target"></span> <span class="text-sm font-normal text-corporate-400">MW</span></p>
+                    </div>
+
+                    <div class="glass-panel rounded-xl p-6 border border-corporate-800 hover:border-mining-600/30 transition-colors">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="w-10 h-10 rounded-lg bg-corporate-800 flex items-center justify-center text-corporate-400">
+                                <i class="fas fa-satellite text-lg"></i>
+                            </div>
+                            <span class="px-2 py-1 bg-green-500/10 text-green-400 text-xs font-semibold rounded">Verified</span>
+                        </div>
+                        <h3 class="text-corporate-400 text-sm font-medium mb-1">Forest Coverage Baseline</h3>
+                        <p class="text-2xl font-bold text-white">62.1% <span class="text-sm font-normal text-corporate-400">Landmass</span></p>
+                    </div>
+
+                    <div class="glass-panel rounded-xl p-6 border border-corporate-800 hover:border-mining-600/30 transition-colors">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="w-10 h-10 rounded-lg bg-corporate-800 flex items-center justify-center text-mining-400 border border-mining-500/20">
+                                <i class="fas fa-microchip text-lg"></i>
+                            </div>
+                            <span class="px-2 py-1 bg-mining-500/10 text-mining-400 text-xs font-semibold rounded">Online</span>
+                        </div>
+                        <h3 class="text-corporate-400 text-sm font-medium mb-1">Active IoT Sensors</h3>
+                        <p class="text-2xl font-bold text-white"><span x-text="overviewMetrics.sensors.toLocaleString()"></span> <span class="text-sm font-normal text-corporate-400">Nodes</span></p>
+                    </div>
                 </div>
-                <div class="warli-container">
-                    <div class="warli-figure" style="top: 20%; animation-delay: 0s;"></div>
-                    <div class="warli-figure" style="top: 45%; animation-delay: 3s; border-color: #48bb78;"></div>
-                    <div class="warli-figure" style="top: 70%; animation-delay: 7s; border-color: #63b3ed;"></div>
-                    <div class="absolute inset-0 flex items-center justify-center opacity-20">
-                        <p class="text-white text-4xl font-black uppercase tracking-widest">Sustainability Flow</p>
+
+                <!-- Main Overview Graphs -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Chart: 7-Day Net Output -->
+                    <div class="lg:col-span-2 glass-panel rounded-xl p-6 border border-corporate-800">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-lg font-serif text-white">7-Day Net Aggregated Output</h3>
+                            <div class="flex gap-2">
+                                <span class="flex items-center gap-1 text-xs text-corporate-400"><span class="w-2 h-2 rounded bg-mining-500"></span> Ore</span>
+                                <span class="flex items-center gap-1 text-xs text-corporate-400"><span class="w-2 h-2 rounded bg-corporate-600"></span> Coal</span>
+                            </div>
+                        </div>
+                        
+                        <div class="bar-chart-container border-b border-corporate-800 pb-2">
+                            <template x-for="day in overviewChartData">
+                                <div class="bar-col flex-row gap-1 justify-center align-end">
+                                    <div class="bar-tooltip" x-text="day.ore + 'k Tons Ore / ' + day.coal + 'k Tons Coal'"></div>
+                                    <div class="bar-fill chart-mining w-1/2" :style="`height: ${Math.min(100, day.ore)}%`"></div>
+                                    <div class="bar-fill chart-gray w-1/2" :style="`height: ${Math.min(100, day.coal)}%`"></div>
+                                </div>
+                            </template>
+                        </div>
+                        <div class="flex justify-between text-xs text-corporate-400 mt-3 px-4">
+                            <template x-for="day in overviewChartData">
+                                <span><span x-text="day.label"></span></span>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- Sector Target Progress Bars -->
+                    <div class="glass-panel rounded-xl p-6 border border-corporate-800 flex flex-col justify-between">
+                        <h3 class="text-lg font-serif text-white mb-4">Key Operations Pipeline</h3>
+                        <div class="space-y-5">
+                            <div>
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span class="text-white">Keonjhar (Iron Ore)</span>
+                                    <span class="text-mining-400 font-bold" x-text="sectorProgress.keonjhar + '%'"></span>
+                                </div>
+                                <div class="w-full bg-corporate-800 h-1.5 rounded"><div class="bg-mining-500 h-full rounded transition-all duration-300" :style="`width: ${sectorProgress.keonjhar}%`"></div></div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span class="text-white">Talcher (Thermal Coal)</span>
+                                    <span class="text-mining-400 font-bold" x-text="sectorProgress.talcher + '%'"></span>
+                                </div>
+                                <div class="w-full bg-corporate-800 h-1.5 rounded"><div class="bg-mining-500 h-full rounded transition-all duration-300" :style="`width: ${sectorProgress.talcher}%`"></div></div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span class="text-white">Sukinda (Chromite)</span>
+                                    <span class="text-mining-400 font-bold" x-text="sectorProgress.sukinda + '%'"></span>
+                                </div>
+                                <div class="w-full bg-corporate-800 h-1.5 rounded"><div class="bg-mining-500 h-full rounded transition-all duration-300" :style="`width: ${sectorProgress.sukinda}%`"></div></div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span class="text-white">Koraput (Bauxite)</span>
+                                    <span class="text-mining-400 font-bold" x-text="sectorProgress.koraput + '%'"></span>
+                                </div>
+                                <div class="w-full bg-corporate-800 h-1.5 rounded"><div class="bg-mining-500 h-full rounded transition-all duration-300" :style="`width: ${sectorProgress.koraput}%`"></div></div>
+                            </div>
+                        </div>
+                        <button class="mt-4 w-full text-xs text-corporate-400 border border-corporate-700 py-2 rounded hover:text-white transition">View All Operations</button>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div id="mining" class="module-card space-y-6">
-            <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
-                <div class="flex gap-4 mb-6">
-                    <span class="tech-badge">Python</span> <span class="tech-badge">YOLO</span> <span class="tech-badge">OpenCV</span> 
-                </div>
-                <h3 class="text-2xl font-bold mb-4">Mining Impact Intelligence </h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="p-5 bg-red-50 rounded-2xl border border-red-100">
-                        <p class="font-bold text-red-700 underline mb-2">Illegal Mining Detection </p>
-                        <p class="text-sm text-red-600">AI scanning satellite imagery for unauthorized land degradation. </p>
+            <!-- 2. Mining Impact Intelligence -->
+            <div x-show="activeTab === 'mining'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0" class="space-y-6" style="display: none;">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Impact Logs -->
+                    <div class="glass-panel p-6 rounded-xl border border-corporate-800 relative overflow-hidden">
+                        <!-- Radar visual background effect -->
+                        <div class="absolute -right-20 -bottom-20 w-64 h-64 border border-mining-500/10 rounded-full flex items-center justify-center opacity-20 pointer-events-none">
+                            <div class="w-48 h-48 border border-mining-500/20 rounded-full flex items-center justify-center">
+                                <div class="w-32 h-32 border border-mining-500/30 rounded-full relative overflow-hidden">
+                                     <div class="absolute inset-0 radar-scanner"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-4 mb-6 border-b border-corporate-800 pb-4 relative z-10">
+                            <div class="relative w-12 h-12 rounded-full border border-mining-500/30 bg-corporate-900 shadow-[0_0_15px_rgba(189,102,48,0.2)] flex items-center justify-center shrink-0 overflow-hidden">
+                                <div class="absolute inset-0 radar-scanner" style="animation-duration: 2s;"></div>
+                                <i class="fas fa-satellite text-mining-500 relative z-10 text-lg"></i>
+                                <div class="absolute inset-x-0 top-1/2 h-px bg-mining-500/20"></div>
+                                <div class="absolute inset-y-0 left-1/2 w-px bg-mining-500/20"></div>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-serif text-white flex items-center gap-2">AI Degradation Scanner <span class="px-2 py-0.5 bg-mining-500/20 text-mining-400 text-[10px] rounded border border-mining-500/50 uppercase tracking-wider font-sans">YOLOv8 Active</span></h3>
+                                <p class="text-xs text-corporate-400 mt-1">Live Feed • Sector 7G • <span x-text="scannerMetrics.sqkm"></span> ha/hr @ <span class="text-mining-400" x-text="scannerMetrics.confidence + '%'"></span> confidence</p>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <div class="p-4 bg-red-900/10 border border-red-900/50 rounded-lg">
+                                <div class="flex justify-between">
+                                    <p class="font-bold text-red-500 flex items-center gap-2"><i class="fas fa-exclamation-circle"></i> Unauthorized Extraction Detected</p>
+                                    <span class="text-xs font-mono text-corporate-400">Sector: Joda East</span>
+                                </div>
+                                <p class="text-sm text-corporate-300 mt-2">Satellite imagery comparison over 48 hours reveals 3.2 hectares of unregistered topsoil removal. Flagged for review.</p>
+                            </div>
+                            <div class="p-4 bg-amber-900/10 border border-amber-900/50 rounded-lg">
+                                <div class="flex justify-between">
+                                    <p class="font-bold text-amber-500 flex items-center gap-2"><i class="fas fa-mountain"></i> High Landslide Risk Flagged</p>
+                                    <span class="text-xs font-mono text-corporate-400">Sector: Koida</span>
+                                </div>
+                                <p class="text-sm text-corporate-300 mt-2">Hydrological sensors indicate soil moisture exceeds 45% threshold. Pit wall stability degraded by 12% in last 24h.</p>
+                                <!-- Risk Bar -->
+                                <div class="mt-3 flex items-center gap-3 text-xs">
+                                    <span class="text-corporate-400">Risk Level:</span>
+                                    <div class="w-full bg-corporate-800 h-1.5 rounded"><div class="bg-amber-500 h-full rounded transition-all duration-300" :style="`width: ${riskLevel}%`"></div></div>
+                                    <span class="text-amber-500 font-bold" x-text="riskLevel + '%'"></span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="p-5 bg-orange-50 rounded-2xl border border-orange-100">
-                        <p class="font-bold text-orange-700 mb-2">Landslide Risk Prediction </p>
-                        <p class="text-sm text-orange-600">Predictive analytics assessing mine collapse probability. [cite: 6, 8]</p>
+
+                    <!-- Visual Graph Area -->
+                    <div class="glass-panel p-6 rounded-xl border border-corporate-800 flex flex-col">
+                        <h3 class="text-lg font-serif text-white mb-6">Extraction Footprint vs Rehabilitation</h3>
+                        <!-- Diverging Bar Chart -->
+                        <div class="flex-1 flex flex-col justify-end gap-3 pb-2 border-l border-b border-corporate-800 pl-4 relative">
+                            <!-- Y-axis labels -->
+                            <div class="absolute left-[-2rem] top-0 text-xs text-corporate-400">Q1</div>
+                            <div class="absolute left-[-2rem] top-1/4 text-xs text-corporate-400">Q2</div>
+                            <div class="absolute left-[-2rem] top-2/4 text-xs text-corporate-400">Q3</div>
+                            <div class="absolute left-[-2rem] bottom-4 text-xs text-corporate-400">Q4</div>
+
+                            <!-- Legend -->
+                            <div class="absolute top-0 right-0 flex gap-4 text-xs">
+                                <span class="flex items-center gap-1 text-corporate-400"><span class="w-3 h-3 rounded bg-amber-500/50 border border-amber-500"></span> New Degradation (Ha)</span>
+                                <span class="flex items-center gap-1 text-corporate-400"><span class="w-3 h-3 rounded bg-green-500/50 border border-green-500"></span> Land Rehabilitated (Ha)</span>
+                            </div>
+
+                            <template x-for="(q, index) in impactChart" :key="index">
+                                <div class="w-full flex items-center h-8 my-2">
+                                    <!-- Center baseline -->
+                                    <div class="w-1/2 flex justify-end pr-1 border-r border-corporate-600 border-dashed">
+                                        <div class="h-4 bg-amber-500/50 border-r border-amber-500 transition-all duration-300" :style="`width: ${q.deg}%`"></div>
+                                    </div>
+                                    <div class="w-1/2 pl-1">
+                                        <div class="h-4 bg-green-500/50 border-l border-green-500 transition-all duration-300" :style="`width: ${q.rehab}%`"></div>
+                                    </div>
+                                </div>
+                            </template>
+                            <div class="w-full flex justify-center text-xs text-corporate-400 mt-2 gap-20">
+                                <span>100</span>
+                                <span>50</span>
+                                <span>0</span>
+                                <span>50</span>
+                                <span>100</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div id="energy" class="module-card space-y-6">
-            <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
-                <div class="flex gap-4 mb-6">
-                    <span class="tech-badge">TensorFlow</span> <span class="tech-badge">Weather APIs</span> 
-                </div>
-                <h3 class="text-2xl font-bold mb-4">Renewable Energy Intelligence </h3>
-                <p class="text-slate-600 mb-6">AI monitors solar and wind energy generation while predicting future output and optimizing storage. </p>
-                <div class="p-6 border-2 border-dashed border-slate-200 rounded-3xl text-center">
-                    <i class="fas fa-map-marked-alt text-4xl text-slate-300 mb-4"></i>
-                    <p class="font-bold text-slate-500">Recommended Solar Farm Locations: Loading... </p>
+            <!-- 3. Renewable Energy -->
+            <div x-show="activeTab === 'energy'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0" class="space-y-6" style="display: none;">
+                <div class="glass-panel p-8 rounded-xl border border-corporate-800">
+                    <div class="flex justify-between items-start mb-8">
+                        <div>
+                            <h3 class="text-2xl font-serif text-white flex items-center gap-3">
+                                <i class="fas fa-solar-panel text-blue-400"></i> Renewable Energy Intelligence
+                            </h3>
+                            <p class="text-corporate-400 text-sm mt-1">Predictive AI (TensorFlow) optimizing solar and wind storage for mining pit operations.</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-sm font-bold text-white text-blue-400">Current Load Offset</p>
+                            <p class="text-3xl font-light text-white"><span x-text="energyMetrics.offset"></span>%</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                        <div class="p-4 bg-corporate-900/50 border border-corporate-800 rounded">
+                            <p class="text-xs text-corporate-500 uppercase font-bold mb-1">Solar Yield</p>
+                            <p class="text-xl text-white"><span x-text="energyMetrics.solar"></span> MW <span class="text-xs text-green-400">↑ Expected</span></p>
+                        </div>
+                        <div class="p-4 bg-corporate-900/50 border border-corporate-800 rounded">
+                            <p class="text-xs text-corporate-500 uppercase font-bold mb-1">Wind Yield</p>
+                            <p class="text-xl text-white"><span x-text="energyMetrics.wind"></span> MW <span class="text-xs text-amber-500">↓ Sub-optimal (wind speed 4 knots)</span></p>
+                        </div>
+                        <div class="p-4 bg-corporate-900/50 border border-corporate-800 rounded">
+                            <p class="text-xs text-corporate-500 uppercase font-bold mb-1">Battery Storage Level</p>
+                            <div class="w-full bg-corporate-800 h-3 rounded mt-2 border border-corporate-700">
+                                <div class="bg-blue-500 h-full rounded transition-all duration-500" :style="`width: ${energyMetrics.battery}%`"></div>
+                            </div>
+                            <p class="text-right text-xs text-blue-400 mt-1"><span x-text="energyMetrics.battery"></span>% / 1000 MWh</p>
+                        </div>
+                    </div>
+
+                    <!-- Generation vs Consumption area chart -->
+                    <div class="relative h-64 border-b border-l border-corporate-800 pt-4 cursor-crosshair">
+                        <!-- Y-axis -->
+                        <div class="absolute left-[-2.5rem] bottom-0 w-8 h-full flex flex-col justify-between text-xs text-corporate-500 text-right pb-6">
+                            <span>800</span><span>600</span><span>400</span><span>200</span><span>0</span>
+                        </div>
+                        
+                        <!-- The paths -->
+                        <svg class="w-full h-full" preserveAspectRatio="none" viewBox="0 0 100 100">
+                            <!-- Grid lines -->
+                            <line x1="0" y1="25" x2="100" y2="25" stroke="#1f2937" stroke-width="0.5" stroke-dasharray="2,2" />
+                            <line x1="0" y1="50" x2="100" y2="50" stroke="#1f2937" stroke-width="0.5" stroke-dasharray="2,2" />
+                            <line x1="0" y1="75" x2="100" y2="75" stroke="#1f2937" stroke-width="0.5" stroke-dasharray="2,2" />
+                            
+                            <!-- Consumption line (red) -->
+                            <path class="chart-line" fill="none" stroke="#ef4444" stroke-width="1.5" :d="'M ' + energyConsumptionPath" />
+                                
+                            <!-- Generation area/line (blue) -->
+                            <path class="chart-line" fill="rgba(59, 130, 246, 0.2)" stroke="#3b82f6" stroke-width="2" :d="'M ' + energyGenerationPath" />
+                        </svg>
+                        
+                        <!-- X-axis -->
+                        <div class="absolute bottom-[-1.5rem] left-0 w-full flex justify-between text-xs text-corporate-500">
+                            <span>00:00</span><span>04:00</span><span>08:00</span><span>12:00</span><span>16:00</span><span>20:00</span><span>24:00</span>
+                        </div>
+                        
+                        <div class="absolute top-0 right-4 flex gap-4 text-xs">
+                            <span class="flex items-center gap-1 text-corporate-400"><span class="w-3 h-0.5 bg-blue-500"></span> Generation Forecast</span>
+                            <span class="flex items-center gap-1 text-corporate-400"><span class="w-3 h-0.5 bg-red-500"></span> Predicted Consumption</span>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <div id="placeholder" class="module-card text-center py-20">
-            <i class="fas fa-microchip text-6xl text-slate-200 mb-6"></i>
-            <h3 class="text-2xl font-bold text-slate-400">Syncing Intelligence Data...</h3>
-            <p class="text-slate-400">Connecting to Cloud (AWS/Firebase) Infrastructure. </p>
-        </div>
+            <!-- 4. Pollution Monitoring -->
+            <div x-show="activeTab === 'pollution'" style="display: none;" class="space-y-6">
+                 <!-- Top Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- AQI Gauge -->
+                    <div class="glass-panel p-6 rounded-xl border border-corporate-800 flex flex-col items-center justify-center relative overflow-hidden group">
+                        <div class="absolute inset-0 bg-amber-500/5 group-hover:bg-amber-500/10 transition"></div>
+                        <p class="text-sm font-medium text-corporate-400 mb-4 z-10">Air Quality Index</p>
+                        
+                        <div class="relative w-32 h-32 mb-2 z-10">
+                            <svg viewBox="0 0 100 100" class="w-full h-full transform -rotate-90">
+                                <!-- Background Track -->
+                                <circle cx="50" cy="50" r="40" fill="transparent" stroke="#1f2937" stroke-width="8" stroke-dasharray="251.2" stroke-linecap="round"></circle>
+                                <!-- Dynamic Value -->
+                                <circle cx="50" cy="50" r="40" fill="transparent" stroke="#f59e0b" stroke-width="8" stroke-dasharray="251.2" :stroke-dashoffset="251.2 - (251.2 * (pollutionMetrics.aqi / 300))" stroke-linecap="round" class="transition-all duration-1000 ease-in-out"></circle>
+                            </svg>
+                            <div class="absolute inset-0 flex flex-col items-center justify-center">
+                                <span class="text-3xl font-bold text-white" x-text="pollutionMetrics.aqi"></span>
+                            </div>
+                        </div>
+                        <span class="text-xs px-3 py-1 bg-amber-500/20 text-amber-500 rounded-full border border-amber-500/50 z-10">Moderate</span>
+                    </div>
 
+                    <!-- Water Turbidity (Liquid fill) -->
+                    <div class="glass-panel p-6 rounded-xl border border-corporate-800 flex flex-col items-center justify-center relative overflow-hidden group">
+                        <p class="text-sm font-medium text-corporate-400 mb-4 z-10">Suspended Particulates (TSS)</p>
+                        
+                        <div class="relative w-28 h-28 rounded-full border-4 border-corporate-700 bg-corporate-900 border-b-green-500 overflow-hidden mb-4 z-10 shadow-[inset_0_0_20px_rgba(34,197,94,0.1)]">
+                            <!-- Animated Wave container -->
+                            <div class="absolute left-0 right-0 bottom-0 bg-transparent transition-all duration-1000 ease-in-out z-10" :style="`height: ${(pollutionMetrics.tss / 100) * 100}%`">
+                                <!-- Wave shape -->
+                                <div class="absolute -top-4 w-[200%] h-8 water-wave rounded-t-[100%]"></div>
+                                <div class="absolute top-2 inset-x-0 bottom-0 bg-gradient-to-t from-green-500 via-green-500/80 to-green-500/60 opacity-80 backdrop-blur-sm"></div>
+                            </div>
+                            <!-- Overlay Text -->
+                            <div class="absolute inset-0 flex flex-col items-center justify-center z-20 mix-blend-screen text-white text-shadow-sm font-bold">
+                                <span class="text-2xl"><span x-text="pollutionMetrics.tss"></span><span class="text-sm ml-1">mg/L</span></span>
+                            </div>
+                        </div>
+                        <span class="text-xs px-3 py-1 bg-green-500/20 text-green-500 rounded-full border border-green-500/50 z-10">Optimal Quality</span>
+                    </div>
+
+                    <!-- Decibel EQ -->
+                    <div class="glass-panel p-6 rounded-xl border border-corporate-800 flex flex-col items-center justify-center relative overflow-hidden group">
+                        <div class="absolute inset-0 bg-red-500/5 group-hover:bg-red-500/10 transition"></div>
+                        <p class="text-sm font-medium text-corporate-400 mb-4 z-10">Average Decibel Index</p>
+                        
+                        <div class="flex items-end gap-1.5 h-24 mb-6 z-10">
+                            <template x-for="i in 8">
+                                <div class="w-3 bg-red-500/20 rounded-t overflow-hidden relative">
+                                    <div class="absolute bottom-0 w-full bg-red-500 rounded-t opacity-80" 
+                                         :style="`height: ${Math.random() * 100}%; animation: eq-bar ${0.5 + Math.random()}s infinite alternate ease-in-out;`"></div>
+                                </div>
+                            </template>
+                        </div>
+                        
+                        <h3 class="text-3xl font-bold text-white z-10 mb-1"><span x-text="pollutionMetrics.decibel"></span> <span class="text-sm font-normal text-corporate-400">dB</span></h3>
+                        <span class="text-xs px-3 py-1 bg-red-500/20 text-red-500 rounded-full border border-red-500/50 z-10 uppercase tracking-wide">Warning</span>
+                    </div>
+                </div>
+
+                <!-- Heatmap Style Bar Chart for 5 Sectors -->
+                <div class="glass-panel p-6 rounded-xl border border-corporate-800">
+                    <h3 class="text-lg font-serif text-white mb-6">Sector Pollution Distribution (PM10/PM2.5)</h3>
+                    <div class="space-y-4">
+                        <template x-for="(sector, idx) in pollutionData" :key="idx">
+                            <div class="flex items-center gap-4">
+                                <span class="w-32 text-xs text-white text-right" x-text="sector.name"></span>
+                                <div class="flex-1 bg-corporate-800 h-6 rounded flex items-center p-0.5 gap-0.5">
+                                    <div class="h-full rounded-sm transition-all duration-300" :class="sector.pm10Color" :style="`width: ${sector.pm10}%`"></div>
+                                    <div class="h-full rounded-sm transition-all duration-300" :class="sector.pm25Color" :style="`width: ${sector.pm25}%`"></div>
+                                </div>
+                                <span class="w-20 text-xs text-corporate-400 font-mono" x-text="sector.total + ' AQI'"></span>
+                            </div>
+                        </template>
+                    </div>
+                    <div class="mt-6 flex justify-center gap-6 text-xs text-corporate-500 border-t border-corporate-800 pt-4">
+                        <span class="flex items-center gap-2"><span class="w-3 h-3 rounded bg-green-500"></span> Safe (<50)</span>
+                        <span class="flex items-center gap-2"><span class="w-3 h-3 rounded bg-amber-500"></span> Moderate (51-100)</span>
+                        <span class="flex items-center gap-2"><span class="w-3 h-3 rounded bg-orange-500"></span> Unhealthy (101-150)</span>
+                        <span class="flex items-center gap-2"><span class="w-3 h-3 rounded bg-red-500"></span> Hazardous (>150)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. Natural Resource Monitoring -->
+            <div x-show="activeTab === 'resources'" style="display: none;" class="space-y-6">
+                <!-- Top summary cards with heavy glassmorphism -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+                    <div class="glass-panel glass-glow p-5 rounded-xl border border-corporate-700 bg-gradient-to-br from-corporate-900/90 to-corporate-900/40 backdrop-blur-xl shadow-[0_8px_32px_0_rgba(0,0,0,0.36)] group">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-lg bg-mining-500/20 text-mining-500 flex items-center justify-center text-xl shadow-[0_0_15px_rgba(189,102,48,0.3)] group-hover:scale-110 transition-transform"><i class="fas fa-boxes"></i></div>
+                            <div>
+                                <p class="text-xs text-corporate-400 font-bold uppercase tracking-wider">Total Extracted</p>
+                                <p class="text-2xl font-light text-white font-mono mt-1"><span x-text="(resourceVal * 0.147).toFixed(1)"></span><span class="text-sm text-corporate-500 ml-1">M Tons</span></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="glass-panel glass-glow p-5 rounded-xl border border-corporate-700 bg-gradient-to-br from-corporate-900/90 to-corporate-900/40 backdrop-blur-xl shadow-[0_8px_32px_0_rgba(0,0,0,0.36)] group">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-lg bg-green-500/20 text-green-500 flex items-center justify-center text-xl shadow-[0_0_15px_rgba(34,197,94,0.3)] group-hover:scale-110 transition-transform"><i class="fas fa-chart-line"></i></div>
+                            <div>
+                                <p class="text-xs text-corporate-400 font-bold uppercase tracking-wider">Estimated Value</p>
+                                <p class="text-2xl font-light text-white font-mono mt-1">$<span x-text="resourceVal"></span><span class="text-sm text-corporate-500 ml-1">M USD</span></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="md:col-span-2 glass-panel glass-glow p-5 rounded-xl border border-corporate-700 bg-gradient-to-br from-corporate-900/90 to-corporate-900/40 backdrop-blur-xl flex items-center justify-between overflow-hidden relative">
+                         <div class="absolute right-0 top-0 bottom-0 w-1/3 bg-gradient-to-l from-green-500/10 to-transparent"></div>
+                         <div>
+                            <p class="text-xs text-corporate-400 font-bold uppercase tracking-wider mb-2">Market Volatility Index</p>
+                            <div class="flex items-end gap-2">
+                                <span class="text-3xl font-bold text-white leading-none">Low</span>
+                                <span class="text-green-500 text-sm font-bold flex items-center gap-1"><i class="fas fa-check-circle"></i> Trending Stable</span>
+                            </div>
+                        </div>
+                        <div class="h-12 w-32 opacity-50">
+                            <!-- Mini sparkline -->
+                            <svg viewBox="0 0 100 40" class="w-full h-full overflow-visible">
+                                <polyline fill="none" stroke="#22c55e" stroke-width="2" points="0,20 20,15 40,25 60,10 80,15 100,5" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 h-full">
+                    <!-- Donut Chart summary with enhanced glass -->
+                    <div class="glass-panel glass-glow p-8 rounded-xl border border-corporate-700 bg-gradient-to-b from-corporate-800/50 to-corporate-900/80 backdrop-blur-md flex flex-col items-center justify-center shadow-lg relative overflow-hidden">
+                        <!-- BG Glow -->
+                        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-mining-500/10 rounded-full blur-[50px] pointer-events-none"></div>
+                        <h3 class="text-lg font-serif text-white mb-6 w-full">Ore Distribution</h3>
+                        
+                        <div class="relative w-48 h-48 mb-6">
+                            <!-- Multi-segment SVG Donut implementation -->
+                            <svg viewBox="0 0 100 100" class="w-full h-full transform -rotate-90">
+                                <template x-for="(segment, idx) in oreDonutSegments" :key="idx">
+                                    <circle cx="50" cy="50" r="40" fill="transparent" :stroke="segment.color" stroke-width="15" stroke-dasharray="251.2" :stroke-dashoffset="segment.dashoffset" :transform="`rotate(${segment.rotate} 50 50)`" class="transition-all duration-1000 ease-out"></circle>
+                                </template>
+                            </svg>
+                            <div class="absolute inset-0 flex flex-col items-center justify-center bg-corporate-900 border-4 border-corporate-800 rounded-full scale-75">
+                                <span class="text-xl font-bold text-white" x-text="(resourceVal * 0.147).toFixed(1) + 'M'"></span>
+                                <span class="text-[10px] text-corporate-400 uppercase">Tons MTD</span>
+                            </div>
+                        </div>
+
+                        <ul class="w-full space-y-3 text-xs mt-4 relative z-10 p-4 bg-corporate-900/50 rounded-lg border border-corporate-800/50">
+                            <template x-for="(ore, idx) in oreDistribution" :key="idx">
+                                <li class="flex justify-between items-center group cursor-pointer p-1 hover:bg-corporate-800/50 rounded transition">
+                                    <span class="flex items-center gap-3">
+                                        <span class="w-3 h-3 rounded shadow-sm" :style="`background-color: ${ore.color}; box-shadow: 0 0 8px ${ore.color}80;`"></span> 
+                                        <span class="text-corporate-300 font-medium group-hover:text-white transition" x-text="ore.name"></span>
+                                    </span>
+                                    <span class="text-white font-mono bg-corporate-900 px-2 py-0.5 rounded border border-corporate-700" x-text="ore.value.toFixed(1) + '%'"></span>
+                                </li>
+                            </template>
+                        </ul>
+                    </div>
+
+                    <!-- Market Value area chart with enhanced glass -->
+                    <div class="md:col-span-2 glass-panel glass-glow p-8 rounded-xl border border-corporate-700 bg-gradient-to-tl from-corporate-900/80 to-corporate-800/40 backdrop-blur-md flex flex-col shadow-lg">
+                        <div class="flex justify-between items-end mb-8">
+                            <div>
+                                <h3 class="text-xl font-serif text-white mb-1">Live Resource Valuation</h3>
+                                <p class="text-sm text-corporate-400">Real-time simulation of extracted ore market value against global indices.</p>
+                            </div>
+                        </div>
+                        <div class="flex-1 border-b border-l border-corporate-800 p-4 relative mb-6">
+                            <!-- Scatter Plot representation of Market value -->
+                            <div class="absolute left-[-1.5rem] bottom-0 w-6 h-full flex flex-col justify-between text-[10px] text-corporate-500 text-right pb-4">
+                                <span>$$</span><span>$</span><span></span>
+                            </div>
+                            
+                            <template x-for="(point, idx) in scatterPoints" :key="idx">
+                                <div class="grid-chart-item transition-all duration-1000" :class="point.color" :style="`left: ${point.x}%; bottom: ${point.y}%`" :title="point.tooltip"></div>
+                            </template>
+                            
+                            <!-- Trend line -->
+                            <svg class="absolute inset-0 w-full h-full pointer-events-none" preserveAspectRatio="none" viewBox="0 0 100 100">
+                                <defs>
+                                    <linearGradient id="trendGradient" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="0%" stop-color="rgba(34, 197, 94, 0.4)"/>
+                                        <stop offset="100%" stop-color="rgba(34, 197, 94, 0)"/>
+                                    </linearGradient>
+                                </defs>
+                                <path fill="url(#trendGradient)" class="chart-line" :d="'M ' + marketAreaPath" />
+                                <path fill="none" stroke="#22c55e" stroke-width="2" class="chart-line" :d="'M ' + marketTrendPath" />
+                            </svg>
+                        </div>
+                        <div class="flex justify-between bg-corporate-900/50 p-4 rounded border border-corporate-800">
+                            <div>
+                                <p class="text-xs text-corporate-500">Estimated Total Value</p>
+                                <p class="text-xl text-mining-400 font-serif">$<span x-text="resourceVal"></span> Million USD</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-xs text-corporate-500">Global Market Trend</p>
+                                <p class="text-green-500 font-bold text-sm">Bullish +4.2%</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 6. Carbon Emission -->
+            <div x-show="activeTab === 'carbon'" style="display: none;" class="space-y-6">
+                <!-- Head with advanced glassmorphism -->
+                 <div class="glass-panel glass-glow p-8 rounded-xl border border-corporate-700 bg-gradient-to-tr from-corporate-900/90 to-corporate-800/60 backdrop-blur-xl text-center relative overflow-hidden shadow-[0_8px_32px_0_rgba(0,0,0,0.36)]">
+                    <!-- Emission Particles effect -->
+                    <template x-for="i in 10">
+                        <div class="carbon-particle" :style="`left: ${Math.random() * 100}%; animation-delay: ${Math.random() * 4}s; animation-duration: ${3 + Math.random() * 3}s;`"></div>
+                    </template>
+
+                    <div class="absolute -right-10 -top-10 w-48 h-48 bg-green-500/10 blur-3xl rounded-full pointer-events-none"></div>
+                    <div class="absolute -left-10 -bottom-10 w-48 h-48 bg-mining-500/10 blur-3xl rounded-full pointer-events-none"></div>
+                    
+                    <h2 class="text-3xl font-serif text-white mb-2 relative z-10">Carbon Footprint Tracker</h2>
+                    <p class="text-corporate-400 max-w-2xl mx-auto mb-8 text-sm relative z-10">State-mandated CO₂ emission tracking against Net-Zero 2050 framework goals.</p>
+                    
+                    <div class="inline-flex gap-8 items-center bg-corporate-900/90 px-8 py-4 rounded-full border border-corporate-600 shadow-inner relative z-10 w-full max-w-3xl justify-between overflow-x-auto">
+                        <div class="text-left">
+                            <span class="text-xs text-corporate-400 uppercase tracking-wider font-bold">YTD Gross Emissions</span>
+                            <p class="text-white text-xl font-mono mt-1"><span x-text="carbonEmissions.toLocaleString()"></span> <span class="text-xs text-corporate-500">tCO₂e</span></p>
+                        </div>
+                        <div class="w-px h-10 bg-corporate-700"></div>
+                        <div class="text-left">
+                            <span class="text-xs text-corporate-400 uppercase tracking-wider font-bold">Target Quota</span>
+                            <p class="text-white text-xl font-mono mt-1">15,000 <span class="text-xs text-corporate-500">tCO₂e</span></p>
+                        </div>
+                        <div class="w-px h-10 bg-corporate-700"></div>
+                        <div class="text-left">
+                            <span class="text-xs text-corporate-400 uppercase tracking-wider font-bold">Net Carbon Impact</span>
+                            <p class="text-blue-400 text-xl font-mono mt-1 font-bold"><span x-text="netCarbon.toLocaleString()"></span> <span class="text-xs text-corporate-500">tCO₂e</span></p>
+                        </div>
+                        <div class="w-px h-10 bg-corporate-700 hidden md:block"></div>
+                        <div class="text-left hidden md:block">
+                            <span class="text-xs text-corporate-400 uppercase tracking-wider font-bold">Status</span>
+                            <p class="text-green-500 text-lg font-bold mt-1 tracking-wide"><i class="fas fa-check-circle"></i> On Track</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Waterfall Chart for Carbon Offsets -->
+                <div class="glass-panel glass-glow p-6 rounded-xl border border-corporate-700 bg-gradient-to-b from-corporate-800/40 to-corporate-900/80 backdrop-blur-md shadow-lg relative overflow-hidden">
+                    <h3 class="text-lg font-serif text-white mb-6 relative z-10">Real-Time Offset Waterfall</h3>
+                    
+                    <div class="flex items-end h-[300px] pb-8 pt-4 gap-2 border-b border-corporate-800 relative z-10">
+                        <!-- Y-axis lines -->
+                        <div class="absolute left-0 bottom-8 w-full border-t border-corporate-800 border-dashed"></div>
+                        <div class="absolute left-0 bottom-1/2 w-full border-t border-corporate-800 border-dashed"></div>
+                        
+                        <!-- Base Emissons -->
+                        <div class="flex-1 flex flex-col justify-end items-center group">
+                            <!-- Baseline represented as 100% height context -->
+                            <div class="w-4/5 bg-gradient-to-t from-red-500/10 to-red-500/30 border border-red-500 border-b-0 h-[80%] relative rounded-t transition-all duration-300 hover:brightness-125">
+                                <span class="absolute -top-6 left-1/2 transform -translate-x-1/2 text-xs text-white font-mono font-bold" x-text="(carbonEmissions/1000).toFixed(1) + 'k'"></span>
+                            </div>
+                            <span class="absolute bottom-1 text-[10px] text-corporate-400 text-center mt-2 font-bold uppercase">Gross<br>Emissions</span>
+                        </div>
+
+                        <!-- Offsets stepping down -->
+                        <!-- Forest offset -->
+                        <div class="flex-1 flex flex-col justify-end items-center relative transition-all duration-1000" :style="`height: ${((carbonEmissions - carbonOffsets.forest) / carbonEmissions) * 80}%`">
+                            <div class="w-4/5 bg-gradient-to-b from-green-500/30 to-green-500/10 border border-green-500 absolute top-0 rounded transition-all duration-1000 ease-in-out hover:brightness-125 shadow-[0_0_15px_rgba(34,197,94,0.2)]" :style="`height: ${(carbonOffsets.forest / carbonEmissions) * 100 * 1.5}%`">
+                                <span class="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-full pb-1 text-xs text-green-400 font-mono font-bold" x-text="'-' + (carbonOffsets.forest/1000).toFixed(1) + 'k'"></span>
+                            </div>
+                            <!-- invisible spacer to push text down -->
+                            <div class="h-full w-full relative">
+                                <span class="absolute -bottom-8 left-1/2 transform -translate-x-1/2 text-[10px] text-corporate-400 text-center font-bold uppercase transition-all duration-1000">Forestry<br>Offset</span>
+                            </div>
+                        </div>
+
+                        <!-- Renewable Switch -->
+                        <div class="flex-1 flex flex-col justify-end items-center relative transition-all duration-1000 delay-75" :style="`height: ${((carbonEmissions - carbonOffsets.forest - carbonOffsets.solar) / carbonEmissions) * 80}%`">
+                            <div class="w-4/5 bg-gradient-to-b from-green-500/30 to-green-500/10 border border-green-500 absolute top-0 rounded transition-all duration-1000 ease-in-out hover:brightness-125 shadow-[0_0_15px_rgba(34,197,94,0.2)]" :style="`height: ${(carbonOffsets.solar / carbonEmissions) * 100 * 1.5}%`">
+                                <span class="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-full pb-1 text-xs text-green-400 font-mono font-bold" x-text="'-' + (carbonOffsets.solar/1000).toFixed(1) + 'k'"></span>
+                            </div>
+                            <div class="h-full w-full relative">
+                                <span class="absolute -bottom-8 left-1/2 transform -translate-x-1/2 text-[10px] text-corporate-400 text-center font-bold uppercase transition-all duration-1000">Solar<br>Grid</span>
+                            </div>
+                        </div>
+
+                        <!-- EV Fleet Switch -->
+                        <div class="flex-1 flex flex-col justify-end items-center relative transition-all duration-1000 delay-150" :style="`height: ${((netCarbon) / carbonEmissions) * 80}%`">
+                            <div class="w-4/5 bg-gradient-to-b from-green-500/30 to-green-500/10 border border-green-500 absolute top-0 rounded transition-all duration-1000 ease-in-out hover:brightness-125 shadow-[0_0_15px_rgba(34,197,94,0.2)]" :style="`height: ${(carbonOffsets.ev / carbonEmissions) * 100 * 1.5}%`">
+                                <span class="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-full pb-1 text-xs text-green-400 font-mono font-bold" x-text="'-' + (carbonOffsets.ev/1000).toFixed(1) + 'k'"></span>
+                            </div>
+                            <div class="h-full w-full relative">
+                                <span class="absolute -bottom-8 left-1/2 transform -translate-x-1/2 text-[10px] text-corporate-400 text-center font-bold uppercase transition-all duration-1000">EV HMV<br>Fleet</span>
+                            </div>
+                        </div>
+
+                        <!-- Net Emissions -->
+                        <div class="flex-1 flex flex-col justify-end items-center group relative transition-all duration-1000 delay-200" :style="`height: ${(netCarbon / carbonEmissions) * 80}%`">
+                            <div class="w-4/5 bg-gradient-to-t from-blue-500/10 to-blue-500/40 border border-blue-500 border-b-0 h-full relative rounded-t transition-all duration-1000 ease-in-out hover:brightness-125 shadow-[0_-5px_20px_rgba(59,130,246,0.2)]">
+                                <span class="absolute -top-6 left-1/2 transform -translate-x-1/2 text-xs text-blue-300 font-mono font-bold text-shadow" x-text="(netCarbon/1000).toFixed(1) + 'k'"></span>
+                            </div>
+                            <div class="h-full w-full relative">
+                                <span class="absolute -bottom-8 left-1/2 transform -translate-x-1/2 text-[10px] font-bold text-blue-400 text-center uppercase tracking-wide transition-all duration-1000">Net Impact<br>(tCO₂e)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 7. Smart Alerts -->
+            <div x-show="activeTab === 'alerts'" style="display: none;" class="space-y-6">
+                
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <!-- Filters/Overview with advanced glass -->
+                    <div class="md:col-span-1 glass-panel glass-glow p-6 rounded-xl border border-corporate-700 bg-gradient-to-b from-corporate-900/90 to-corporate-800/60 backdrop-blur-xl shadow-[0_8px_32px_0_rgba(0,0,0,0.36)] relative overflow-hidden group">
+                        <!-- BG Glow -->
+                        <div class="absolute -right-10 -top-10 w-32 h-32 bg-blue-500/10 rounded-full blur-[40px] pointer-events-none transition-all duration-1000 group-hover:bg-blue-500/20"></div>
+                        
+                        <h3 class="text-white font-serif text-lg mb-6 relative z-10">System Health Overview</h3>
+                        
+                        <!-- Animated Radial Health Graph -->
+                        <div class="relative w-40 h-40 mx-auto mb-8 z-10 flex items-center justify-center">
+                            <!-- Background concentric circles -->
+                            <div class="absolute inset-0 rounded-full border border-corporate-700/50"></div>
+                            <div class="absolute inset-4 rounded-full border border-corporate-700/50"></div>
+                            <div class="absolute inset-8 rounded-full border border-corporate-700/50"></div>
+                            <div class="absolute inset-12 rounded-full border border-corporate-700/50"></div>
+                            
+                            <!-- Radar sweep effect -->
+                            <div class="absolute inset-0 rounded-full bg-[conic-gradient(from_0deg,transparent_0deg,transparent_270deg,rgba(59,130,246,0.3)_360deg)] animate-[radar-spin_4s_linear_infinite]"></div>
+                            
+                            <!-- Dynamic SVG Radar Polygon -->
+                            <svg viewBox="0 0 100 100" class="absolute inset-0 w-full h-full drop-shadow-[0_0_10px_rgba(59,130,246,0.8)]">
+                                <path fill="rgba(59, 130, 246, 0.4)" stroke="#3b82f6" stroke-width="1.5" stroke-linejoin="round" :d="systemHealthRadarPath" class="transition-all duration-700 ease-in-out"/>
+                            </svg>
+                            
+                            <!-- Center blip -->
+                            <div class="w-2 h-2 rounded-full bg-blue-400 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20 shadow-[0_0_10px_#60a5fa] animate-ping"></div>
+                            <div class="w-1.5 h-1.5 rounded-full bg-white absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-30"></div>
+                        </div>
+                        
+                        <div class="space-y-4 text-sm relative z-10 bg-corporate-900/50 p-4 rounded-lg border border-corporate-800/50">
+                            <label class="flex items-center justify-between text-corporate-300 hover:text-white cursor-pointer group/label">
+                                <div class="flex items-center gap-2">
+                                    <input type="checkbox" checked class="accent-red-500 w-4 h-4 rounded bg-corporate-800 border-corporate-700"> 
+                                    <span class="font-medium group-hover/label:text-red-400 transition-colors">Critical</span>
+                                </div>
+                                <span class="bg-red-500/20 text-red-500 px-2 py-0.5 rounded text-xs border border-red-500/30">3</span>
+                            </label>
+                            <label class="flex items-center justify-between text-corporate-300 hover:text-white cursor-pointer group/label">
+                                <div class="flex items-center gap-2">
+                                    <input type="checkbox" checked class="accent-amber-500 w-4 h-4 rounded bg-corporate-800 border-corporate-700"> 
+                                    <span class="font-medium group-hover/label:text-amber-400 transition-colors">Warnings</span>
+                                </div>
+                                <span class="bg-amber-500/20 text-amber-500 px-2 py-0.5 rounded text-xs border border-amber-500/30">8</span>
+                            </label>
+                            <label class="flex items-center justify-between text-corporate-300 hover:text-white cursor-pointer group/label">
+                                <div class="flex items-center gap-2">
+                                    <input type="checkbox" checked class="accent-blue-500 w-4 h-4 rounded bg-corporate-800 border-corporate-700"> 
+                                    <span class="font-medium group-hover/label:text-blue-400 transition-colors">Information</span>
+                                </div>
+                                <span class="bg-blue-500/20 text-blue-500 px-2 py-0.5 rounded text-xs border border-blue-500/30">42</span>
+                            </label>
+                        </div>
+                        
+                        <button class="mt-6 w-full relative group overflow-hidden bg-corporate-800 text-white font-bold tracking-wider py-3 rounded text-xs transition duration-300 border border-corporate-700 hover:border-mining-500 hover:text-mining-400 z-10">
+                            <span class="relative z-10"><i class="fas fa-check-double mr-2"></i> Acknowledge All Active</span>
+                            <div class="absolute inset-0 h-full w-0 bg-corporate-700/50 rtl:right-0 ltr:left-0 z-0 transition-all duration-300 ease-out group-hover:w-full"></div>
+                        </button>
+                    </div>
+
+                    <!-- Alerts Feed with enhanced glass -->
+                    <div class="md:col-span-3 glass-panel glass-glow rounded-xl border border-corporate-700 bg-gradient-to-br from-corporate-900/80 to-corporate-800/40 backdrop-blur-md h-full shadow-[0_8px_32px_0_rgba(0,0,0,0.36)] flex flex-col">
+                         <!-- Header -->
+                         <div class="flex flex-none items-center justify-between p-5 border-b border-corporate-700 bg-corporate-800/50 backdrop-blur-sm rounded-t-xl z-20 shadow-sm relative">
+                            <h3 class="text-white font-serif text-xl flex items-center gap-3"><i class="fas fa-satellite-dish text-corporate-400"></i> Live Alert Feed</h3>
+                            <div class="flex items-center gap-3 bg-corporate-900 py-1.5 px-3 rounded-full border border-corporate-700 shadow-inner">
+                                <span class="text-xs text-corporate-400 font-mono">Status: Active</span>
+                                <span class="flex h-3 w-3 relative">
+                                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                    <span class="relative inline-flex rounded-full h-3 w-3 bg-red-500 shadow-[0_0_8px_#ef4444]"></span>
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="divide-y divide-corporate-800/50 flex-1 overflow-y-auto custom-scrollbar relative z-10 transition-all duration-500">
+                            <!-- Live updating feed container to show interactivity -->
+                            <div class="p-4 bg-blue-900/10 border-l-4 border-blue-500 transition-all duration-700" :class="carbonEmissions % 2 === 0 ? 'opacity-100 translate-x-0' : 'opacity-80 translate-x-1'">
+                                <div class="flex justify-between items-start mb-1">
+                                    <h4 class="text-sm font-bold text-blue-400 flex items-center gap-2"><div class="w-2 h-2 rounded-full bg-blue-400 animate-pulse shadow-[0_0_8px_#60a5fa]"></div> System Sweep Completed</h4>
+                                    <span class="text-xs text-blue-300 font-mono bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20">LIVE</span>
+                                </div>
+                                <p class="text-sm text-corporate-300 mb-2">Routine diagnostic sweep across 14,021 active sensors completed successfully. All subsystems nominal.</p>
+                            </div>
+
+                            <!-- Critical Alert -->
+                            <div class="p-5 hover:bg-corporate-800/40 transition-colors duration-300 cursor-pointer border-l-4 border-red-500 bg-red-900/5 relative group">
+                                <div class="absolute inset-0 bg-gradient-to-r from-red-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                <div class="flex justify-between items-start mb-2 relative z-10">
+                                    <h4 class="text-base font-bold text-red-400 flex items-center gap-2"><i class="fas fa-radiation animate-pulse drop-shadow-[0_0_5px_rgba(239,68,68,0.8)]"></i> Geofence Breach : Blasting Zone</h4>
+                                    <span class="text-xs text-corporate-400 font-mono">00:02:14</span>
+                                </div>
+                                <p class="text-sm text-corporate-300 mb-3 relative z-10 leading-relaxed">Unregistered light vehicle LV-426 detected within 500m mandatory exclusion perimeter of impending Sector 7B blast zone. Automated countdown sequence halted.</p>
+                                <div class="flex gap-3 relative z-10">
+                                    <span class="text-[10px] uppercase font-bold tracking-wider px-2.5 py-1 bg-red-500/20 text-red-300 rounded border border-red-500/30 flex items-center gap-1.5"><i class="fas fa-lock"></i> Auto-Paused</span>
+                                    <span class="text-[10px] uppercase font-bold tracking-wider px-2.5 py-1 bg-corporate-900 text-corporate-400 rounded border border-corporate-700">Ref: AZ-992</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Warning -->
+                            <div class="p-5 hover:bg-corporate-800/40 transition-colors duration-300 cursor-pointer border-l-4 border-amber-500 bg-amber-900/5 relative group">
+                                <div class="absolute inset-0 bg-gradient-to-r from-amber-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                <div class="flex justify-between items-start mb-2 relative z-10">
+                                    <h4 class="text-base font-bold text-amber-500 flex items-center gap-2"><i class="fas fa-temperature-high drop-shadow-[0_0_5px_rgba(245,158,11,0.5)]"></i> Equipment Overheating</h4>
+                                    <span class="text-xs text-corporate-400 font-mono">00:12:45</span>
+                                </div>
+                                <p class="text-sm text-corporate-300 mb-3 relative z-10 leading-relaxed">Hydraulic fluid temperature anomaly detected on primary Excavator EX-110, currently exceeding standard operational limits (104°C). Load reduced by 40%.</p>
+                                <div class="flex gap-3 relative z-10">
+                                    <span class="text-[10px] uppercase font-bold tracking-wider px-2.5 py-1 bg-amber-500/20 text-amber-300 rounded border border-amber-500/30 flex items-center gap-1.5"><i class="fas fa-tools"></i> Maint. Dispatched</span>
+                                    <span class="text-[10px] uppercase font-bold tracking-wider px-2.5 py-1 bg-corporate-900 text-corporate-400 rounded border border-corporate-700">Ref: ME-184</span>
+                                </div>
+                            </div>
+
+                            <!-- Info -->
+                            <div class="p-5 hover:bg-corporate-800/40 transition-colors duration-300 cursor-pointer border-l-4 border-blue-500 relative group bg-blue-900/5">
+                                <div class="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                <div class="flex justify-between items-start mb-2 relative z-10">
+                                    <h4 class="text-base font-bold text-blue-400 flex items-center gap-2"><i class="fas fa-truck drop-shadow-[0_0_5px_rgba(96,165,250,0.5)]"></i> Fleet Route Optimized</h4>
+                                    <span class="text-xs text-corporate-400 font-mono">01:05:22</span>
+                                </div>
+                                <p class="text-sm text-corporate-300 mb-2 relative z-10 leading-relaxed">Logistics AI automatically rerouted 14 autonomous haulers from North Ridge road due to sudden water accumulation parameters. Estimated delay: -4 mins.</p>
+                            </div>
+
+                            <!-- Info -->
+                            <div class="p-5 hover:bg-corporate-800/40 transition-colors duration-300 cursor-pointer border-l-4 border-corporate-600 opacity-60 relative group hover:opacity-100">
+                                <div class="flex justify-between items-start mb-2">
+                                    <h4 class="text-base font-bold text-corporate-300 flex items-center gap-2"><i class="fas fa-file-invoice"></i> Shift Report Generated</h4>
+                                    <span class="text-xs text-corporate-400 font-mono">04:22:15</span>
+                                </div>
+                                <p class="text-sm text-corporate-400 mb-2 leading-relaxed">Morning operational shift compliance and block yield discrepancy report successfully compiled and uploaded to global ERP grid.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
     </main>
 
     <script>
-        function showModule(moduleId, element) {
-            // Update Navigation UI
-            document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('nav-active'));
-            element.classList.add('nav-active');
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('dashboard', () => ({
+                activeTab: 'overview',
+                headerTitle: 'Executive Overview',
+                headerSubtitle: 'High-level aggregated telemetry across all active sectors.',
+                
+                // --- Reactive States for All Modules ---
+                
+                // 1. Overview
+                overviewMetrics: {
+                    extraction: 315240, target: 1420, sensors: 4829, score: 82, efficiency: 94.2
+                },
+                sectorProgress: { keonjhar: 92, talcher: 100, sukinda: 78, koraput: 88 },
+                overviewChartData: [
+                    { label: 'Mon', ore: 85, coal: 65 }, { label: 'Tue', ore: 75, coal: 70 },
+                    { label: 'Wed', ore: 60, coal: 55 }, { label: 'Thu', ore: 90, coal: 80 },
+                    { label: 'Fri', ore: 95, coal: 85 }, { label: 'Sat', ore: 80, coal: 75 },
+                    { label: 'Sun', ore: 85, coal: 70 }
+                ],
+                
+                // 2. Mining Impact
+                riskLevel: 82,
+                scannerMetrics: { sqkm: 1240, confidence: 98.4 },
+                impactChart: [
+                    { deg: Math.random() * 40 + 20, rehab: Math.random() * 30 + 10 },
+                    { deg: Math.random() * 40 + 20, rehab: Math.random() * 30 + 10 },
+                    { deg: Math.random() * 40 + 20, rehab: Math.random() * 30 + 10 },
+                    { deg: Math.random() * 40 + 20, rehab: Math.random() * 30 + 10 }
+                ],
 
-            // Update Module Visibility
-            document.querySelectorAll('.module-card').forEach(card => card.classList.remove('active'));
-            const target = document.getElementById(moduleId);
-            if (target) {
-                target.classList.add('active');
-            } else {
-                document.getElementById('placeholder').classList.add('active');
-            }
+                // 3. Energy
+                energyMetrics: { offset: 41.2, solar: 480, wind: 210, battery: 86 },
+                energyConsumptionPts: [40, 42, 38, 50, 60, 45, 30, 35, 45, 65, 60],
+                energyGenerationPts: [60, 50, 40, 30, 35, 20, 15, 25, 35, 50, 55],
+                get energyConsumptionPath() {
+                    return this.energyConsumptionPts.map((y, i) => `${i * 10},${y}`).join(' L ');
+                },
+                get energyGenerationPath() {
+                    let pts = this.energyGenerationPts.map((y, i) => `${i * 10},${y}`).join(' L ');
+                    return `0,100 L ${pts} L 100,100`; // close area shape
+                },
 
-            // Update Header Text
-            const titles = {
-                'overview': 'Executive Overview',
-                'mining': 'Mining Impact Intelligence',
-                'energy': 'Renewable Energy Intelligence',
-                'pollution': 'Pollution Monitoring System',
-                'resources': 'Natural Resource Monitoring',
-                'carbon': 'Carbon Emission Dashboard',
-                'alerts': 'Smart Alert System'
-            };
-            document.getElementById('title-text').innerText = titles[moduleId];
-            document.getElementById('subtitle-text').innerText = `Real-time monitoring for ${titles[moduleId]} module.`;
-        }
+                // 4. Pollution
+                pollutionMetrics: { aqi: 114, tss: 42, decibel: 88 },
+                pollutionData: [
+                    { name: 'Talcher Core', pm10: 60, pm10Color: 'bg-orange-500', pm25: 40, pm25Color: 'bg-red-500', total: 142 },
+                    { name: 'Joda East Pit', pm10: 45, pm10Color: 'bg-amber-500', pm25: 25, pm25Color: 'bg-orange-500', total: 85 },
+                    { name: 'Sukinda Processing', pm10: 30, pm10Color: 'bg-green-500', pm25: 15, pm25Color: 'bg-amber-500', total: 64 },
+                    { name: 'Koida Ridge', pm10: 75, pm10Color: 'bg-red-500', pm25: 10, pm25Color: 'bg-green-500', total: 110 },
+                    { name: 'Panchpatmali', pm10: 20, pm10Color: 'bg-green-500', pm25: 5, pm25Color: 'bg-green-500', total: 42 }
+                ],
+                
+                // 5. Resources
+                resourceVal: 28.4,
+                oreDistribution: [
+                    { name: 'Iron Ore', color: '#bd6630', value: 60.0 },
+                    { name: 'Thermal Coal', color: '#4b5563', value: 25.0 },
+                    { name: 'Bauxite', color: '#10b981', value: 10.0 },
+                    { name: 'Chromite', color: '#eab308', value: 5.0 }
+                ],
+                get oreDonutSegments() {
+                    let segments = [];
+                    let currentAngle = 0;
+                    this.oreDistribution.forEach(ore => {
+                        let pct = ore.value / 100;
+                        let offset = 251.2 * (1 - pct);
+                        segments.push({
+                            color: ore.color,
+                            dashoffset: offset,
+                            rotate: currentAngle
+                        });
+                        currentAngle += pct * 360;
+                    });
+                    return segments;
+                },
+                scatterPoints: Array.from({length: 40}, () => ({
+                    x: Math.floor(Math.random() * 90) + 5,
+                    y: Math.floor(Math.random() * 80) + 10,
+                    color: ['bg-mining-500', 'bg-corporate-500', 'bg-green-500', 'bg-amber-500'][Math.floor(Math.random() * 4)],
+                    tooltip: 'Batch Value: $' + (Math.random() * 100 + 10).toFixed(1) + 'k'
+                })),
+                marketTrendPts: [20, 25, 30, 45, 40, 50, 60, 55, 70, 75, 80],
+                get marketTrendPath() {
+                    return this.marketTrendPts.map((y, i) => `${i * 10},${100 - y}`).join(' L ');
+                },
+                get marketAreaPath() {
+                    let pts = this.marketTrendPts.map((y, i) => `${i * 10},${100 - y}`).join(' L ');
+                    return `0,100 L ${pts} L 100,100`;
+                },
+
+                // 6. Carbon
+                carbonEmissions: 18500,
+                carbonOffsets: { forest: 3700, solar: 2700, ev: 1800 },
+                get netCarbon() {
+                    return this.carbonEmissions - (this.carbonOffsets.forest + this.carbonOffsets.solar + this.carbonOffsets.ev);
+                },
+                 // 7. Alerts (mini chart -> replaced with radial radar stats in UI, leaving array for data gen)
+                alertChart: Array.from({length: 8}, () => ({ h: Math.random() * 80 + 10, angle: 0 })),
+                get systemHealthRadarPath() {
+                    const cx = 50, cy = 50, radius = 45;
+                    // Calculate points in a circle based on alertChart heights
+                    let path = '';
+                    const totalPoints = this.alertChart.length;
+                    this.alertChart.forEach((point, i) => {
+                        const angle = (Math.PI * 2 * i) / totalPoints - Math.PI / 2;
+                        // Map height (10-90) to radius distance (10-45)
+                        const dist = 10 + (point.h / 100) * 35;
+                        const x = cx + dist * Math.cos(angle);
+                        const y = cy + dist * Math.sin(angle);
+                        path += (i === 0 ? `M ${x},${y}` : ` L ${x},${y}`);
+                    });
+                    // Close the path
+                    return path + ' Z';
+                },
+
+                // Helper: Random fluctuation function,
+
+                tabs: [
+                    { id: 'overview', name: 'Executive Overview', icon: 'fas fa-chart-pie', subtitle: 'High-level aggregated telemetry across all active sectors.' },
+                    { id: 'mining', name: 'Mining Impact Intelligence', icon: 'fas fa-mountain', subtitle: 'AI land degradation, pit stability, and footprint analytics.' },
+                    { id: 'energy', name: 'Renewable Energy Intelligence', icon: 'fas fa-solar-panel', subtitle: 'Grid offsetting via predictive solar and wind forecasting.' },
+                    { id: 'pollution', name: 'Pollution Monitoring System', icon: 'fas fa-smog', subtitle: 'Real-time air quality, acoustic indexes, and water turbidity.' },
+                    { id: 'resources', name: 'Natural Resource Monitoring', icon: 'fas fa-cubes', subtitle: 'Extracted mineral yield tracking and financial valuation.' },
+                    { id: 'carbon', name: 'Carbon Emission Dashboard', icon: 'fas fa-leaf', subtitle: 'Corporate CO₂ tracking and renewable offset metrics.' },
+                    { id: 'alerts', name: 'Smart Alert System', icon: 'fas fa-bell', subtitle: 'Active hazard notifications, fatigue tracking, and geofence breaches.' }
+                ],
+                
+                updateHeader(tab) {
+                    this.headerTitle = tab.name;
+                    this.headerSubtitle = tab.subtitle;
+                },
+
+                // Randomization Helper
+                fluctuate(val, min, max, change) {
+                    return Math.max(min, Math.min(max, val + (Math.random() * change * 2 - change)));
+                },
+
+                init() {
+                    setInterval(() => {
+                        // Overview
+                        this.overviewMetrics.extraction = Math.floor(this.fluctuate(this.overviewMetrics.extraction, 300000, 350000, 500));
+                        this.overviewMetrics.score = Math.floor(this.fluctuate(this.overviewMetrics.score, 75, 95, 1));
+                        this.overviewMetrics.efficiency = Number(this.fluctuate(this.overviewMetrics.efficiency, 90, 99, 0.5).toFixed(1));
+                        
+                        this.sectorProgress.keonjhar = Math.floor(this.fluctuate(this.sectorProgress.keonjhar, 85, 95, 2));
+                        this.sectorProgress.sukinda = Math.floor(this.fluctuate(this.sectorProgress.sukinda, 70, 85, 2));
+
+                        Reflect.set(this, 'overviewChartData', this.overviewChartData.map(day => ({
+                            label: day.label,
+                            ore: this.fluctuate(day.ore, 0, 100, 5),
+                            coal: this.fluctuate(day.coal, 0, 100, 5)
+                        })));
+
+                        // Mining Impact
+                        this.riskLevel = Math.floor(this.fluctuate(this.riskLevel, 70, 95, 3));
+                        this.scannerMetrics.sqkm = Math.floor(this.fluctuate(this.scannerMetrics.sqkm, 1200, 1300, 5));
+                        this.scannerMetrics.confidence = Number(this.fluctuate(this.scannerMetrics.confidence, 96, 99.5, 0.4).toFixed(1));
+                        
+                        this.impactChart = this.impactChart.map(q => ({
+                            deg: this.fluctuate(q.deg, 10, 60, 4), rehab: this.fluctuate(q.rehab, 5, 50, 4)
+                        }));
+
+                        // Energy
+                        this.energyMetrics.offset = Number(this.fluctuate(this.energyMetrics.offset, 35, 50, 0.4).toFixed(1));
+                        this.energyMetrics.solar = Math.floor(this.fluctuate(this.energyMetrics.solar, 400, 550, 10));
+                        this.energyMetrics.wind = Math.floor(this.fluctuate(this.energyMetrics.wind, 150, 300, 15));
+                        this.energyMetrics.battery = Math.floor(this.fluctuate(this.energyMetrics.battery, 50, 100, 2));
+
+                        // Shift chart arrays left and append new fluctuating value
+                        let lastC = this.energyConsumptionPts[this.energyConsumptionPts.length - 1];
+                        this.energyConsumptionPts.shift();
+                        this.energyConsumptionPts.push(Math.floor(this.fluctuate(lastC, 30, 70, 8)));
+                        
+                        let lastG = this.energyGenerationPts[this.energyGenerationPts.length - 1];
+                        this.energyGenerationPts.shift();
+                        this.energyGenerationPts.push(Math.floor(this.fluctuate(lastG, 10, 60, 8)));
+                        
+                        // force Alpine reactivity for getters
+                        this.energyConsumptionPts = [...this.energyConsumptionPts];
+                        this.energyGenerationPts = [...this.energyGenerationPts];
+
+                        // Pollution
+                        this.pollutionMetrics.aqi = Math.floor(this.fluctuate(this.pollutionMetrics.aqi, 80, 150, 5));
+                        this.pollutionMetrics.tss = Math.floor(this.fluctuate(this.pollutionMetrics.tss, 30, 60, 2));
+                        this.pollutionMetrics.decibel = Math.floor(this.fluctuate(this.pollutionMetrics.decibel, 70, 110, 3));
+
+                        Reflect.set(this, 'pollutionData', this.pollutionData.map(sector => {
+                            let pm10 = this.fluctuate(sector.pm10, 10, 90, 4);
+                            let pm25 = this.fluctuate(sector.pm25, 5, 45, 4);
+                            return { ...sector, pm10, pm25, total: Math.floor(pm10 * 1.5 + pm25) };
+                        }));
+
+                        // Resources
+                        this.resourceVal = Number(this.fluctuate(this.resourceVal, 25, 35, 0.2).toFixed(1));
+                        
+                        // Fluctuate Ore Distribution
+                        let ironDelta = (Math.random() * 2 - 1) * 0.5;
+                        this.oreDistribution[0].value = Math.max(50, Math.min(70, this.oreDistribution[0].value + ironDelta));
+                        this.oreDistribution[1].value = Math.max(15, Math.min(35, this.oreDistribution[1].value - ironDelta)); // offset to maintain ~100%
+                        this.oreDistribution = [...this.oreDistribution]; // triggering reactivity
+
+                        Reflect.set(this, 'scatterPoints', this.scatterPoints.map(p => ({
+                            ...p, y: this.fluctuate(p.y, 5, 95, 3)
+                        })));
+
+                        // Shift Market Trend Chart
+                        let lastT = this.marketTrendPts[this.marketTrendPts.length - 1];
+                        this.marketTrendPts.shift();
+                        this.marketTrendPts.push(Math.floor(this.fluctuate(lastT, 20, 90, 8)));
+                        this.marketTrendPts = [...this.marketTrendPts];
+
+                        // Carbon
+                        this.carbonEmissions = Math.floor(this.fluctuate(this.carbonEmissions, 18000, 19500, 20));
+                        this.carbonOffsets.forest = Math.floor(this.fluctuate(this.carbonOffsets.forest, 3500, 4000, 10));
+                        this.carbonOffsets.solar = Math.floor(this.fluctuate(this.carbonOffsets.solar, 2500, 3000, 15));
+                        this.carbonOffsets.ev = Math.floor(this.fluctuate(this.carbonOffsets.ev, 1600, 2000, 8));
+
+                        // Alerts Radar update
+                        this.alertChart = this.alertChart.map(b => ({
+                            h: Math.floor(this.fluctuate(b.h, 20, 95, 25))
+                        }));
+                    }, 2000);
+                }
+            }))
+        })
     </script>
 </body>
 </html>
